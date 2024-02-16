@@ -1,15 +1,15 @@
-class ProFamilyData {
+class ProFamilyModel {
   int? id;
   String? name;
   int? deleted;
 
-  ProFamilyData({
+  ProFamilyModel({
     this.id,
     this.name,
     this.deleted,
   });
 
-  ProFamilyData.fromJson(Map<String, dynamic> json){
+  ProFamilyModel.fromJson(Map<String, dynamic> json){
     id = json['id'];
     name = json['name'];
     deleted = json['deleted'];
@@ -26,16 +26,16 @@ class ProFamilyData {
 
 class ProFamilyResponse {
   bool? success;
-  List<ProFamilyData>? data;
+  List<ProFamilyModel>? data;
   String? message;
 
   ProFamilyResponse({this.success, this.data, this.message});
 
   ProFamilyResponse.fromJson(Map<String, dynamic> json){
     success = json['success'];if (json['data'] != null) {
-      data = <ProFamilyData>[];
+      data = <ProFamilyModel>[];
       json['data'].forEach((v) {
-        data!.add(ProFamilyData.fromJson(v));
+        data!.add(ProFamilyModel.fromJson(v));
       });
     }
     message = json['message'];

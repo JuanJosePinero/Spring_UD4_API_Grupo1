@@ -1,82 +1,86 @@
-// class StudentData {
-//   int? id;
-//   String? name;
-//   String? surname;
-//   String? email;
-//   String? password;
-//   int? proFamilyId;
-//   List<Servicio>? servicios;
-//   int? userId;
+import 'package:spring_ud4_grupo1_app/models/UserModel.dart';
 
-//   StudentData({
-//     this.id,
-//     this.name,
-//     this.surname,
-//     this.email,
-//     this.password,
-//     this.proFamilyId,
-//     this.servicios,
-//     this.userId,
-//   });
+class StudentModel extends UserModel{
+  int? id;
+  String? name;
+  String? surname;
+  String? email;
+  String? password;
+  int? enabled;
+  String? role;
+  String? token; // Asumiendo que el token también se manejará aquí
+  // No hay campos directos para studentID o businessID ya que este es el modelo de estudiante.
+  // Asumiendo profesionalFamily y servicios como strings para simplificación
+  String? profesionalFamily;
+  List<String>? servicios;
 
-//   StudentData.fromJson(Map<String, dynamic> json) {
-//     id = json['id'];
-//     name = json['name'];
-//     surname = json['surname'];
-//     email = json['email'];
-//     password = json['password'];
-//     proFamilyId = json['proFamilyId'];
-//     if (json['servicios'] != null) {
-//       servicios = <Servicio>[];
-//       json['servicios'].forEach((v) {
-//         servicios!.add(Servicio.fromJson(v));
-//       });
-//     }
-//     userId = json['userId'];
-//   }
+  StudentModel({
+    this.id,
+    this.name,
+    this.surname,
+    this.email,
+    this.password,
+    this.enabled,
+    this.role,
+    this.token,
+    this.profesionalFamily,
+    this.servicios,
+  });
 
-//   Map<String, dynamic> toJson() {
-//     final Map<String, dynamic> data = <String, dynamic>{};
-//     data['id'] = id;
-//     data['name'] = name;
-//     data['surname'] = surname;
-//     data['email'] = email;
-//     data['password'] = password;
-//       data['proFamily'] = proFamilyId;
-//     if (servicios != null) {
-//       data['servicios'] = servicios!.map((v) => v.toJson()).toList();
-//     }
-//     data['userId'] = userId;
+  factory StudentModel.fromJson(Map<String, dynamic> json) {
+    return StudentModel(
+      id: json['id'],
+      name: json['name'],
+      surname: json['surname'],
+      email: json['email'],
+      password: json['password'],
+      enabled: json['enabled'],
+      role: json['role'],
+      token: json['token'],
+      // Asumiendo conversiones simplificadas para profesionalFamily y servicios
+      profesionalFamily: json['profesionalFamily'],
+      servicios: List<String>.from(json['servicios'] ?? []),
+    );
+  }
 
-//     return data;
-//   }
-// }
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['name'] = name;
+    data['surname'] = surname;
+    data['email'] = email;
+    data['password'] = password;
+    data['enabled'] = enabled;
+    data['role'] = role;
+    data['token'] = token;
+    data['profesionalFamily'] = profesionalFamily;
+    data['servicios'] = servicios;
+    return data;
+  }
+}
 
-// class StudentResponse {
-//   bool? success;
-//   List<StudentData>? data;
-//   String? message;
+class StudentResponse extends  UserModel{
+  bool? success;
+  StudentModel? data;
+  String? message;
 
-//   StudentResponse({this.success, this.data, this.message});
+  StudentResponse({this.success, this.data, this.message});
 
-//   StudentResponse.fromJson(Map<String, dynamic> json) {
-//     success = json['success'];
-//     if (json['data'] != null) {
-//       data = <StudentData>[];
-//       json['data'].forEach((v) {
-//         data!.add(StudentData.fromJson(v));
-//       });
-//     }
-//     message = json['message'];
-//   }
+  factory StudentResponse.fromJson(Map<String, dynamic> json) {
+    return StudentResponse(
+      success: json['success'],
+      data: json['data'] != null ? StudentModel.fromJson(json['data']) : null,
+      message: json['message'],
+    );
+  }
 
-//   Map<String, dynamic> toJson() {
-//     final Map<String, dynamic> data = <String, dynamic>{};
-//     data['success'] = success;
-//     if (this.data != null) {
-//       data['data'] = this.data!.map((v) => v.toJson()).toList();
-//     }
-//     data['message'] = message;
-//     return data;
-//   }
-// }
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['success'] = success;
+    if (this.data != null) {
+      data['data'] = this.data!.toJson();
+    }
+    data['message'] = message;
+    return data;
+  }
+}

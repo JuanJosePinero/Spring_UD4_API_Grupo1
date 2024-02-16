@@ -1,78 +1,42 @@
-class UserData {
+class UserModel {
   int? id;
   String? username;
-  String? password;
   String? email;
-  int? enabled;
-  String? role;
   String? token;
-  int? studentID;
-  int? businessID;
 
-  UserData({
-    this.id,
-    this.username,
-    this.password,
-    this.email,
-    this.enabled,
-    this.role,
-    this.token,
-    this.studentID,
-    this.businessID,
-  });
+  UserModel({this.id, this.username, this.email, this.token});
 
-  UserData.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    username = json['username'];
-    password = json['password'];
-    email = json['email'];
-    enabled = json['enabled'];
-    role = json['role'];
-    token = json['token'];
-    studentID = json['studentID'];
-    businessID = json['businessID'];
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['id'],
+      username: json['username'],
+      email: json['email'],
+      token: json['token'],
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['id'] = id;
-    data['username'] = username;
-    data['password'] = password;
-    data['email'] = email;
-    data['enabled'] = enabled;
-    data['role'] = role;
-    data['token'] = token;
-    data['studentID'] = studentID;
-    data['businessID'] = businessID;
-    return data;
+    return {
+      'id': id,
+      'username': username,
+      'email': email,
+      'token': token,
+    };
   }
 }
 
 class UserResponse {
   bool? success;
-  List<UserData>? data;
+  UserModel? data;
   String? message;
 
   UserResponse({this.success, this.data, this.message});
 
-  UserResponse.fromJson(Map<String, dynamic> json) {
-    success = json['success'];
-    if (json['data'] != null) {
-      data = <UserData>[];
-      json['data'].forEach((v) {
-        data!.add(UserData.fromJson(v));
-      });
-    }
-    message = json['message'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['success'] = success;
-    if (this.data != null) {
-      data['data'] = this.data!.map((v) => v.toJson()).toList();
-    }
-    data['message'] = message;
-    return data;
+  factory UserResponse.fromJson(Map<String, dynamic> json) {
+    return UserResponse(
+      success: json['success'],
+      data: json['data'] != null ? UserModel.fromJson(json['data']) : null,
+      message: json['message'],
+    );
   }
 }
