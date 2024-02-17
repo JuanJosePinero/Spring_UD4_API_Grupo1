@@ -1,9 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:spring_ud4_grupo1_app/access/register.dart';
+import 'package:spring_ud4_grupo1_app/admin/adminView.dart';
 import 'package:spring_ud4_grupo1_app/business/businessView.dart';
 
-class LoginPage extends StatelessWidget {
+import '../services/userService.dart';
+import '../student/studentView.dart';
+
+class LoginPage extends StatefulWidget {
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _login() async {
+    final email = _emailController.text;
+    final password = _passwordController.text;
+    final studentModel = await UserService().login(email, password);
+
+    if (studentModel != null) {
+      switch (studentModel.role) {
+        case "ROLE_STUDENT":
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => StudentView()));
+          break;
+        case "ROLE_BUSINESS":
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => BusinessView()));
+          break;
+        case "ROLE_ADMIN":
+          Navigator.push(context, MaterialPageRoute(builder: (context) => AdminView()));
+          break;
+        default:
+          _showSnackBar("Role not recognized", Icons.error, Colors.red);
+          break;
+      }
+    } else {
+      _showSnackBar("Error validating credentials", Icons.error, Colors.red);
+    }
+  }
+
+  void _showSnackBar(String message, IconData icon, Color color) {
+    final snackBar = SnackBar(
+      content: Row(
+        children: <Widget>[
+          Icon(icon, color: color),
+          const SizedBox(width: 20),
+          Expanded(child: Text(message)),
+        ],
+      ),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   @override
   Widget build(BuildContext context) {
     // Establecer el estilo general de la barra de estado
@@ -34,16 +93,20 @@ class LoginPage extends StatelessWidget {
                   // Image.asset('assets/imgs/Logo1.jpeg', width: 100, height: 100),
                   const SizedBox(height: 50),
                   TextFormField(
+                    controller: _emailController,
                     decoration: InputDecoration(
-                      hintText: 'Username',
-                      prefixIcon: const Icon(Icons.person),
+                      hintText: 'Email',
+                      prefixIcon: const Icon(Icons.email),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(25.0),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(
+                    height: 20.0,
+                  ),
                   TextFormField(
+                    controller: _passwordController,
                     obscureText: true,
                     decoration: InputDecoration(
                       hintText: 'Password',
@@ -59,14 +122,10 @@ class LoginPage extends StatelessWidget {
                       primary: Colors.blue,
                       onPrimary: Colors.white,
                       shape: const StadiumBorder(),
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 15),
                     ),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => BusinessView()),
-                      );
-                    },
+                    onPressed: _login,
                     child: const Text('Login'),
                   ),
                   const SizedBox(height: 20),
@@ -87,4 +146,5 @@ class LoginPage extends StatelessWidget {
       ),
     );
   }
+  
 }
