@@ -1,81 +1,74 @@
-// class StudentData {
-//   int? id;
-//   String? name;
-//   String? surname;
-//   String? email;
-//   String? password;
-//   int? proFamilyId;
-//   List<Servicio>? servicios;
-//   int? userId;
+import 'ServicioModel.dart';
+import 'UserModel.dart';
 
-//   StudentData({
-//     this.id,
-//     this.name,
-//     this.surname,
-//     this.email,
-//     this.password,
-//     this.proFamilyId,
-//     this.servicios,
-//     this.userId,
-//   });
+class BusinessModel extends UserModel {
+  String? name;
+  String? address;
+  String? phone;
+  String? logo;
+  List<ServicioModel>? servicioList;
+  int? deleted;
 
-//   StudentData.fromJson(Map<String, dynamic> json) {
-//     id = json['id'];
-//     name = json['name'];
-//     surname = json['surname'];
-//     email = json['email'];
-//     password = json['password'];
-//     proFamilyId = json['proFamilyId'];
-//     if (json['servicios'] != null) {
-//       servicios = <Servicio>[];
-//       json['servicios'].forEach((v) {
-//         servicios!.add(Servicio.fromJson(v));
-//       });
-//     }
-//     userId = json['userId'];
-//   }
+  BusinessModel({
+    int? id,
+    String? email,
+    this.name,
+    this.address,
+    this.phone,
+    this.logo,
+    this.servicioList,
+    this.deleted,
+  }) : super(id: id, email: email);
 
-//   Map<String, dynamic> toJson() {
-//     final Map<String, dynamic> data = <String, dynamic>{};
-//     data['id'] = id;
-//     data['name'] = name;
-//     data['surname'] = surname;
-//     data['email'] = email;
-//     data['password'] = password;
-//     data['proFamilyId'] = proFamilyId;
-//     if (servicios != null) {
-//       data['servicios'] = servicios!.map((v) => v.toJson()).toList();
-//     }
-//       data['userId'] = userId;
-//     return data;
-//   }
-// }
+  factory BusinessModel.fromJson(Map<String, dynamic> json) {
+    return BusinessModel(
+      id: json['id'],
+      email: json['email'],
+      name: json['name'],
+      address: json['address'],
+      phone: json['phone'],
+      logo: json['logo'],
+      servicioList: json['servicioList'] != null ? List<ServicioModel>.from(json['servicioList'].map((model) => ServicioModel.fromJson(model))) : null,
+      deleted: json['deleted'],
+    );
+  }
 
-// class StudentResponse {
-//   bool? success;
-//   List<StudentData>? data;
-//   String? message;
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = super.toJson();
+    data.addAll({
+      'name': name,
+      'address': address,
+      'phone': phone,
+      'logo': logo,
+      'servicioList': servicioList?.map((v) => v.toJson()).toList(),
+      'deleted': deleted,
+    });
+    return data;
+  }
+}
 
-//   StudentResponse({this.success, this.data, this.message});
+class BusinessResponse {
+  bool? success;
+  BusinessModel? data;
+  String? message;
 
-//   StudentResponse.fromJson(Map<String, dynamic> json) {
-//     success = json['success'];
-//     if (json['data'] != null) {
-//       data = <StudentData>[];
-//       json['data'].forEach((v) {
-//         data!.add(StudentData.fromJson(v));
-//       });
-//     }
-//     message = json['message'];
-//   }
+  BusinessResponse({this.success, this.data, this.message});
 
-//   Map<String, dynamic> toJson() {
-//     final Map<String, dynamic> data = <String, dynamic>{};
-//     data['success'] = success;
-//     if (this.data != null) {
-//       data['data'] = this.data!.map((v) => v.toJson()).toList();
-//     }
-//     data['message'] = message;
-//     return data;
-//   }
-// }
+  factory BusinessResponse.fromJson(Map<String, dynamic> json) {
+    return BusinessResponse(
+      success: json['success'],
+      data: json['data'] != null ? BusinessModel.fromJson(json['data']) : null,
+      message: json['message'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['success'] = success;
+    if (this.data != null) {
+      data['data'] = this.data!.toJson();
+    }
+    data['message'] = message;
+    return data;
+  }
+}
