@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:spring_ud4_grupo1_app/models/ServicioModel.dart';
 import 'package:spring_ud4_grupo1_app/services/studentService.dart';
+import 'package:spring_ud4_grupo1_app/student/studentCards.dart';
 
 class StudentView extends StatefulWidget {
   final String token;
@@ -29,8 +30,9 @@ void _viewServices() async {
     for (var service in services) {
       print('ID: ${service.id}, Título: ${service.title}, Descripción: ${service.description}');
     }
+  _navigateToServicioListScreen(services);
   } else {
-    print('error');
+    _showError();
   }
 }
 
@@ -40,8 +42,9 @@ void _viewAssignedServices() async {
     for (var service in services) {
       print('ID: ${service.id}, Título: ${service.title}, Descripción: ${service.description}');
     }
+  _navigateToServicioListScreen(services);
   } else {
-    print('error');
+    _showError();
   }
 }
 
@@ -51,9 +54,23 @@ void _viewUnassignedServices() async {
     for (var service in services) {
       print('ID: ${service.id}, Título: ${service.title}, Descripción: ${service.description}');
     }
+  _navigateToServicioListScreen(services);
   } else {
-    print('error');
+    _showError();
   }
+}
+
+void _navigateToServicioListScreen(List<ServicioModel> servicios) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => ServicioListScreen(servicios: servicios)),
+  );
+}
+
+void _showError() {
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Error al recuperar los servicios')),
+  );
 }
 
   @override
