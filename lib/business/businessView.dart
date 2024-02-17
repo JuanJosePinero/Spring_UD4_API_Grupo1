@@ -54,27 +54,27 @@ class _BusinessViewState extends State<BusinessView> {
                   _buildButtonWithIconAndText(
                       Icons.add,
                       'Crear nuevo servicio por parte de la empresa logueada',
-                      () => {}), // Implementar la funcionalidad
+                      () => {}),
                   _buildButtonWithIconAndText(
                       Icons.search,
                       'Recuperar un determinado servicio de la empresa logueada',
-                      () => {}), // Implementar la funcionalidad
+                      () => {}), 
                   _buildButtonWithIconAndText(
                       Icons.list,
                       'Recuperar todos los servicios de la empresa logueada',
-                      () => {}), // Implementar la funcionalidad
+                      () => {}), 
                   _buildButtonWithIconAndText(
                       Icons.edit,
                       'Actualizar un servicio de la empresa logueada',
-                      () => {}), // Implementar la funcionalidad
+                      () => {}), 
                   _buildButtonWithIconAndText(
                       Icons.delete,
                       'Eliminar un servicio de la empresa logueada',
-                      () => {}), // Implementar la funcionalidad
+                      () => {}), 
                   _buildButtonWithIconAndText(
                       Icons.filter_list,
                       'Recuperar los servicios de una empresa filtrando por familia profesional',
-                      () => {}), // Implementar la funcionalidad
+                      () => {}), 
                 ],
               ),
             ),
