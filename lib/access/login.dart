@@ -31,12 +31,14 @@ class _LoginPageState extends State<LoginPage> {
     if (studentModel != null) {
       switch (studentModel.role) {
         case "ROLE_STUDENT":
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => StudentView()));
-          break;
+  Navigator.push(
+    context, 
+    MaterialPageRoute(builder: (context) => StudentView(token: studentModel.token!)),
+  );
+  break;
         case "ROLE_BUSINESS":
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => BusinessView()));
+              context, MaterialPageRoute(builder: (context) => BusinessView(token: studentModel.token!)));
           break;
         case "ROLE_ADMIN":
           Navigator.push(context, MaterialPageRoute(builder: (context) => AdminView()));

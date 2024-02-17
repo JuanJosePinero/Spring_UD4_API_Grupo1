@@ -28,21 +28,22 @@ class ServicioModel {
   });
 
   factory ServicioModel.fromJson(Map<String, dynamic> json) {
-    return ServicioModel(
-      id: json['id'],
-      title: json['title'],
-      description: json['description'],
-      registerDate: DateTime.tryParse(json['registerDate']),
-      happeningDate: DateTime.tryParse(json['happeningDate']),
-      studentId: json['studentId'],
-      businessId: json['businessId'],
-      profesionalFamilyId: json['profesionalFamilyId'],
-      valoration: json['valoration']?.toDouble(),
-      finished: json['finished'],
-      comment: json['comment'],
-      deleted: json['deleted'],
-    );
-  }
+  return ServicioModel(
+    id: json['id'],
+    title: json['title'] ?? '', 
+    description: json['description'] ?? '', 
+    registerDate: json['registerDate'] != null ? DateTime.tryParse(json['registerDate']) : null,
+    happeningDate: json['happeningDate'] != null ? DateTime.tryParse(json['happeningDate']) : null,
+    studentId: json['studentId'],
+    businessId: json['businessId'],
+    profesionalFamilyId: json['profesionalFamilyId'],
+    valoration: (json['valoration'] != null) ? json['valoration'].toDouble() : null,
+    finished: json['finished'],
+    comment: json['comment'] ?? '', 
+    deleted: json['deleted'],
+  );
+}
+
 
   Map<String, dynamic> toJson() {
     return {
