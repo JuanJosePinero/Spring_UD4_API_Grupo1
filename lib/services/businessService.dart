@@ -123,7 +123,7 @@ class BusinessService {
 
   Future<BusinessModel> obtenerEmpresaLogueada(String token) async {
     final response =
-        await http.get(Uri.parse('$baseUrl/obtenerEmpresaLogueada'), headers: {
+        await http.get(Uri.parse('$baseUrl/getLoggedBusiness'), headers: {
       'Authorization': 'Bearer $token',
     });
 
