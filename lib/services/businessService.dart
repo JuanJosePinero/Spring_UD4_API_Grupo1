@@ -63,7 +63,7 @@ class BusinessService {
       Uri.parse('$baseUrl/servicios/$serviceId'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
+        'Authorization': '$token',
       },
       body: json.encode(serviceToUpdate.toJson()),
     );
@@ -82,7 +82,7 @@ class BusinessService {
     final response = await http.delete(
       Uri.parse('$baseUrl/servicios/$serviceId'),
       headers: {
-        'Authorization': 'Bearer $token',
+        'Authorization': '$token',
       },
     );
 
@@ -102,7 +102,7 @@ class BusinessService {
       Uri.parse('$baseUrl/newServicio'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
+        'Authorization': '$token',
       },
       body: json.encode(newService.toJson()),
     );
