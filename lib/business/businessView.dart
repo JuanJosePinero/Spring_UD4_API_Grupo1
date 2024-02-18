@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, no_leading_underscores_for_local_identifiers
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:spring_ud4_grupo1_app/business/businessCards.dart';
@@ -125,7 +127,7 @@ class _BusinessViewState extends State<BusinessView> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("No se pudieron cargar los servicios")),
+        const SnackBar(content: Text("No se pudieron cargar los servicios")),
       );
     }
   }
@@ -133,7 +135,7 @@ class _BusinessViewState extends State<BusinessView> {
   void _showSpecificServiceDetailsPanel(int? serviceId) async {
     if (serviceId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("ID de servicio no válido")),
+        const SnackBar(content: Text("ID de servicio no válido")),
       );
       return;
     }
@@ -152,7 +154,7 @@ class _BusinessViewState extends State<BusinessView> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text("Título: ${serviceDetails.title}"),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Text("Descripción: ${serviceDetails.description}"),
                   // Agrega aquí más detalles que quieras mostrar
                 ],
@@ -163,7 +165,8 @@ class _BusinessViewState extends State<BusinessView> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("No se pudo cargar el detalle del servicio")),
+        const SnackBar(
+            content: Text("No se pudo cargar el detalle del servicio")),
       );
     }
   }
@@ -190,7 +193,7 @@ class _BusinessViewState extends State<BusinessView> {
                 ),
                 DropdownButton<ProFamilyModel>(
                   value: _selectedProfesionalFamily,
-                  hint: Text("Select Professional Family"),
+                  hint: const Text("Select Professional Family"),
                   onChanged: (newValue) {
                     setState(() {
                       _selectedProfesionalFamily = newValue!;
@@ -337,11 +340,11 @@ class _BusinessViewState extends State<BusinessView> {
           child: Material(
             color: Colors.transparent,
             child: Container(
-              padding: EdgeInsets.all(20),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     color: Colors.black26,
                     blurRadius: 5,
@@ -359,13 +362,13 @@ class _BusinessViewState extends State<BusinessView> {
                     color: isSuccess ? Colors.green : Colors.red,
                     size: 60,
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       isSuccess
                           ? "Deleted service successfully"
                           : "Service not deleted",
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
                   ),
                 ],
@@ -378,7 +381,7 @@ class _BusinessViewState extends State<BusinessView> {
       Overlay.of(context)?.insert(overlayEntry);
 
       // Eliminar el overlay después de un corto período
-      Future.delayed(Duration(seconds: 3), () {
+      Future.delayed(const Duration(seconds: 3), () {
         overlayEntry.remove();
       });
     });
@@ -434,16 +437,16 @@ class _BusinessViewState extends State<BusinessView> {
       context: context,
       builder: (BuildContext localContext) {
         return AlertDialog(
-          title: Text("Eliminar Servicio"),
+          title: const Text("Eliminar Servicio"),
           content: Text(
               "¿Deseas eliminar el servicio '${serviceName ?? "Sin título"}'?"),
           actions: <Widget>[
             TextButton(
-              child: Text("Cancelar"),
+              child: const Text("Cancelar"),
               onPressed: () => Navigator.of(localContext).pop(),
             ),
             TextButton(
-              child: Text("Eliminar"),
+              child: const Text("Eliminar"),
               onPressed: () async {
                 try {
                   await _businessService.deleteService(widget.token, serviceId);
@@ -517,7 +520,7 @@ class _BusinessViewState extends State<BusinessView> {
                   _buildButtonWithIconAndText(
                       Icons.filter_list,
                       'Recuperar los servicios de una empresa filtrando por familia profesional',
-                      () => {}),
+                      _showProFamiliesPanel),
                 ],
               ),
             ),
@@ -525,6 +528,51 @@ class _BusinessViewState extends State<BusinessView> {
         ),
       ),
     );
+  }
+
+  void _showProFamiliesPanel() async {
+    final proFamilies =
+        await _proFamilyService.getProfesionalFamilies(widget.token);
+    if (proFamilies != null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext localContext) {
+          return Dialog(
+            child: Container(
+              padding: const EdgeInsets.all(20.0),
+              height: MediaQuery.of(localContext).size.height * 0.5,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: proFamilies.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final proFamily = proFamilies[index];
+                        return ListTile(
+                          title: Text(proFamily.name ?? "Sin nombre"),
+                          onTap: () {
+                            Navigator.of(context)
+                                .pop(); // Cierra el panel flotante
+                            // Aquí puedes llamar a otro método que maneje la acción deseada tras seleccionar una familia profesional
+                            // Por ejemplo, cargar servicios específicos para esa familia profesional
+                            // _showServicesForProFamily(proFamily.id);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("No se pudieron cargar las familias profesionales")),
+      );
+    }
   }
 
   Widget _buildButtonWithIconAndText(
