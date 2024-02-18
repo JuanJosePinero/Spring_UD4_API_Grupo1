@@ -22,7 +22,7 @@ class BusinessService {
     }
   }
 
-  Future<ServicioModel> getBusinesSpecificService(
+  Future<ServicioModel> getBusinessSpecificService(
       String token, int serviceId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/servicios/$serviceId'),

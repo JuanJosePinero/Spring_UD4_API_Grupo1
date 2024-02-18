@@ -51,10 +51,9 @@ class _BusinessViewState extends State<BusinessView> {
 
   void _businessSpecificServices(int serviceId) async {
     try {
-      final service = await _businessService.getBusinesSpecificService(
+      final service = await _businessService.getBusinessSpecificService(
           widget.token, serviceId);
       if (service != null) {
-        // Empaqueta el servicio único en una lista para mantener la compatibilidad con BusinessCards
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -62,62 +61,39 @@ class _BusinessViewState extends State<BusinessView> {
           ),
         );
       } else {
-        // Mostrar mensaje de error si no se encuentra el servicio
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("No se pudo recuperar el servicio")),
         );
       }
     } catch (e) {
-      // Manejar cualquier otro error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
       );
     }
   }
 
-  void _showServicesPanel() {
-    print("Lista de Servicios: $_services");
-
+  void _showSpecificServicesPanel() async {
+  final services = await _businessService.getBusinessServices(widget.token);
+  if (services != null) {
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (BuildContext localContext) {
         return Dialog(
           child: Container(
             padding: const EdgeInsets.all(20.0),
-            height: MediaQuery.of(context).size.height * 0.5,
-            width: MediaQuery.of(context).size.width * 0.7,
+            height: MediaQuery.of(localContext).size.height * 0.5,
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Expanded(
                   child: ListView.builder(
-                    itemCount: _services.length,
-                    itemBuilder: (context, index) {
+                    itemCount: services.length,
+                    itemBuilder: (BuildContext context, int index) {
                       return ListTile(
-                        title: Text(_services[index].title ?? "Sin título"),
-                        onTap: () async {
-                          if (_services[index].id != null) {
-                            // Verificar que el id no sea null antes de proceder
-                            final service = await _businessService
-                                .getBusinesSpecificService(
-                                    widget.token, _services[index].id!);
-                            Navigator.pop(context); // Cerrar el diálogo
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      BusinessCards(servicios: [service])),
-                            );
-                          } else {
-                            // Manejar el caso en el que el id es null, por ejemplo, mostrando un mensaje de error
-                            Navigator.pop(
-                                context); // Opcional: cerrar el diálogo antes de mostrar el mensaje
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      "El servicio seleccionado no tiene un ID válido.")),
-                            );
-                          }
+                        title: Text(services[index].title ?? "Sin título"),
+                        onTap: () {
+                          Navigator.of(context).pop(); // Usamos el context del builder
+                          // Corregido para llamar al método con el contexto correcto y el ID de servicio
+                          _showSpecificServiceDetailsPanel(services[index].id);
                         },
                       );
                     },
@@ -129,7 +105,51 @@ class _BusinessViewState extends State<BusinessView> {
         );
       },
     );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("No se pudieron cargar los servicios")),
+    );
   }
+}
+
+void _showSpecificServiceDetailsPanel(int? serviceId) async {
+  if (serviceId == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("ID de servicio no válido")),
+    );
+    return;
+  }
+
+  final serviceDetails = await _businessService.getBusinessSpecificService(widget.token, serviceId);
+
+  if (serviceDetails != null) {
+    showDialog(
+      context: context,
+      builder: (BuildContext localContext) {
+        return Dialog(
+          child: Container(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text("Título: ${serviceDetails.title}"),
+                SizedBox(height: 10),
+                Text("Descripción: ${serviceDetails.description}"),
+                // Agrega aquí más detalles que quieras mostrar
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("No se pudo cargar el detalle del servicio")),
+    );
+  }
+}
+
+
 
   void _showCreateServicePanel() {
   final _titleController = TextEditingController();
@@ -233,7 +253,7 @@ class _BusinessViewState extends State<BusinessView> {
                   _buildButtonWithIconAndText(
                       Icons.search,
                       'Recuperar un determinado servicio de la empresa logueada',
-                      _showServicesPanel),
+                      _showSpecificServicesPanel),
                   _buildButtonWithIconAndText(
                     Icons.list,
                     'Recuperar todos los servicios de la empresa logueada',
