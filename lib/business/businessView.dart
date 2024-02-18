@@ -33,7 +33,7 @@ class _BusinessViewState extends State<BusinessView> {
     _loadProFamilies();
   }
 
-  void _loadProFamilies() async {
+  Future<void> _loadProFamilies() async {
     final families = await _proFamilyService.getProfesionalFamilies(
         'Bearer${widget.token}'); // Asume que tienes este método
     setState(() {
@@ -178,68 +178,76 @@ class _BusinessViewState extends State<BusinessView> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Create New Service"),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                TextField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(labelText: 'Title'),
+        return FutureBuilder(
+          future:
+              _loadProFamilies(), // Llama a la función _loadProFamilies aquí
+          builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            } else {
+              // Una vez que las familias profesionales estén disponibles, muestra el diálogo de creación de servicio
+              return AlertDialog(
+                title: const Text("Create New Service"),
+                content: SingleChildScrollView(
+                  child: ListBody(
+                    children: <Widget>[
+                      TextField(
+                        controller: _titleController,
+                        decoration: const InputDecoration(labelText: 'Title'),
+                      ),
+                      TextField(
+                        controller: _descriptionController,
+                        decoration:
+                            const InputDecoration(labelText: 'Description'),
+                      ),
+                      DropdownButton<ProFamilyModel>(
+                        value: _selectedProfesionalFamily,
+                        hint: const Text("Select Professional Family"),
+                        onChanged: (newValue) {
+                          setState(() {
+                            _selectedProfesionalFamily = newValue!;
+                          });
+                        },
+                        items:
+                            _profesionalFamilies.map((ProFamilyModel family) {
+                          return DropdownMenuItem<ProFamilyModel>(
+                            value: family,
+                            child: Text(family.name ?? 'Nombre no disponible'),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
                 ),
-                TextField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                ),
-                DropdownButton<ProFamilyModel>(
-                  value: _selectedProfesionalFamily,
-                  hint: const Text("Select Professional Family"),
-                  onChanged: (newValue) {
-                    setState(() {
-                      _selectedProfesionalFamily = newValue!;
-                    });
-                    Navigator.of(context, rootNavigator: true).pop('dialog');
-                    _showCreateServicePanel(); // Vuelve a mostrar el diálogo para reflejar el cambio
-                  },
-                  items: _profesionalFamilies.map((ProFamilyModel family) {
-                    return DropdownMenuItem<ProFamilyModel>(
-                      value: family,
-                      child: Text(family.name ?? 'Nombre no disponible'),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            ElevatedButton(
-              child: const Text('Accept'),
-              onPressed: () async {
-                try {
-                  print('IMPRIME ARRIBAAAAA');
-                  // final business = await _businessService
-                  //     .obtenerEmpresaLogueada(widget.token);
-
-                  final newService = ServicioModel(
-                    title: _titleController.text,
-                    description: _descriptionController.text,
-                    // businessId: business,
-                    profesionalFamilyId: _selectedProfesionalFamily,
-                  );
-                  final createdService = await _businessService.createService(
-                      widget.token, newService);
-                  Navigator.pop(
-                      context); // Cierra el diálogo después de la operación exitosa
-                } catch (e) {
-                  Navigator.pop(
-                      context); // También cierra el diálogo si hay un error
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(e.toString())),
-                  );
-                }
-              },
-            ),
-          ],
+                actions: <Widget>[
+                  ElevatedButton(
+                    child: const Text('Accept'),
+                    onPressed: () async {
+                      try {
+                        final newService = ServicioModel(
+                          title: _titleController.text,
+                          description: _descriptionController.text,
+                          profesionalFamilyId: _selectedProfesionalFamily,
+                        );
+                        final createdService = await _businessService
+                            .createService(widget.token, newService);
+                        Navigator.pop(
+                            context); // Cierra el diálogo después de la operación exitosa
+                      } catch (e) {
+                        Navigator.pop(
+                            context); // También cierra el diálogo si hay un error
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(e.toString())),
+                        );
+                      }
+                    },
+                  ),
+                ],
+              );
+            }
+          },
         );
       },
     );
