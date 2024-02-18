@@ -3,9 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:spring_ud4_grupo1_app/business/businessCards.dart';
 import 'package:spring_ud4_grupo1_app/models/ProFamilyModel.dart';
 import 'package:spring_ud4_grupo1_app/models/ServicioModel.dart';
-
-import '../services/businessService.dart';
-import '../services/proFamilyService.dart';
+import 'package:spring_ud4_grupo1_app/services/businessService.dart';
+import 'package:spring_ud4_grupo1_app/services/proFamilyService.dart';
 
 class BusinessView extends StatefulWidget {
   final String token;
@@ -214,12 +213,14 @@ class _BusinessViewState extends State<BusinessView> {
               child: const Text('Accept'),
               onPressed: () async {
                 try {
-                  final business = await _businessService
-                      .obtenerEmpresaLogueada(widget.token);
+                  print('IMPRIME ARRIBAAAAA');
+                  // final business = await _businessService
+                  //     .obtenerEmpresaLogueada(widget.token);
+
                   final newService = ServicioModel(
                     title: _titleController.text,
                     description: _descriptionController.text,
-                    businessId: business,
+                    // businessId: business,
                     profesionalFamilyId: _selectedProfesionalFamily,
                   );
                   final createdService = await _businessService.createService(
