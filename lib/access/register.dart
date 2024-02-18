@@ -26,6 +26,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   // Valor actual seleccionado para el Dropdown
   String _selectedProfession = 'IT';
+  int a = 1;
 
   // Lista de familias profesionales
   final List<String> _professionalFamily = [
@@ -155,54 +156,30 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _validateFields() async {
-    if (_nameController.text.isEmpty ||
-        _usernameController.text.isEmpty ||
-        _emailController.text.isEmpty ||
-        _passwordController.text.isEmpty ||
-        _verifyPasswordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Some fields are empty',
-            style: TextStyle(color: Colors.red, fontSize: 16),
-          ),
-        ),
-      );
-    } else {
+  if (_nameController.text.isEmpty ||
+      _emailController.text.isEmpty ||
+      _passwordController.text.isEmpty) {
+  } else {
+    try {
       final studentModel = StudentModel(
         name: _nameController.text,
         surname: _usernameController.text,
         email: _emailController.text,
         password: _passwordController.text,
-        profesionalFamily: _selectedProfession,
       );
+
       final registeredUser = await _userService.register(studentModel);
 
       if (registeredUser != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'User registered successfully',
-              style: TextStyle(color: Colors.green, fontSize: 16),
-            ),
-          ),
-        );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LoginPage()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Error registering user',
-              style: TextStyle(color: Colors.red, fontSize: 16),
-            ),
-          ),
-        );
+        // Navegar a la pantalla de inicio de sesión o mostrar mensaje de éxito
       }
+    } catch (e) {
+      // Mostrar el error específico
     }
   }
+}
+
+
 
   Widget _buildTextField({
     required TextEditingController controller,

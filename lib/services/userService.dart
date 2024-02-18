@@ -20,17 +20,21 @@ class UserService {
   }
 
   Future<StudentModel?> register(StudentModel studentModel) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/register'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(studentModel.toJson()),
-    );
+  final response = await http.post(
+    Uri.parse('$baseUrl/register'),
+    headers: {'Content-Type': 'application/json'},
+    body: json.encode(studentModel.toJson()),
+  );
 
-    if (response.statusCode == 200) {
-      return StudentModel.fromJson(json.decode(response.body));
-    } else {
-      // Manejar el error o devolver null
-      return null;
-    }
-  }
+  if (response.statusCode == 200) {
+    return StudentModel.fromJson(json.decode(response.body));
+  } else {
+  print('Status Code: ${response.statusCode}');
+  print('Response Body: ${response.body}');
+  final errorData = json.decode(response.body);
+  throw Exception(errorData['message'] ?? 'Unknown error occurred');
+}
+
+}
+
 }
