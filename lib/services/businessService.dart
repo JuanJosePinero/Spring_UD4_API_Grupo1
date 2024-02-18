@@ -1,3 +1,4 @@
+import 'package:spring_ud4_grupo1_app/models/BusinessModel.dart';
 import 'package:spring_ud4_grupo1_app/models/ServicioModel.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -117,6 +118,20 @@ class BusinessService {
     } else {
       throw Exception(
           'Error al crear el servicio. Status code: ${response.statusCode}');
+    }
+  }
+
+  Future<BusinessModel> obtenerEmpresaLogueada(String token) async {
+    final response =
+        await http.get(Uri.parse('$baseUrl/obtenerEmpresaLogueada'), headers: {
+      'Authorization': 'Bearer $token',
+    });
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return BusinessModel.fromJson(jsonResponse);
+    } else {
+      throw Exception('No se pudo obtener la empresa');
     }
   }
 }
