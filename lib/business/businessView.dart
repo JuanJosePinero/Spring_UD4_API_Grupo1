@@ -29,16 +29,16 @@ class _BusinessViewState extends State<BusinessView> {
     super.initState();
     _businessService = BusinessService();
     _proFamilyService = ProFamilyService();
-    // _loadProFamilies();
+    _loadProFamilies();
   }
 
-  // void _loadProFamilies() async {
-  //   final families = await _proFamilyService.getProfesionalFamilies(
-  //       'Bearer${widget.token}'); // Asume que tienes este método
-  //   setState(() {
-  //     _profesionalFamilies = families;
-  //   });
-  // }
+  void _loadProFamilies() async {
+    final families = await _proFamilyService.getProfesionalFamilies(
+        'Bearer${widget.token}'); // Asume que tienes este método
+    setState(() {
+      _profesionalFamilies = families;
+    });
+  }
 
   void _businessServices() async {
     try {
@@ -241,11 +241,6 @@ class _BusinessViewState extends State<BusinessView> {
     );
   }
 
-
-
-
-
-
   // Método modificado para incluir un botón de eliminación en cada ListTile
 // void _deleteServicesPanel() async {
 //   final services = await _businessService.getBusinessServices(widget.token);
@@ -269,7 +264,7 @@ class _BusinessViewState extends State<BusinessView> {
 //                           onTap: () {
 //                             Navigator.of(localContext).pop();
 //                             // Aquí pasamos 'context' en lugar de 'localContext' para asegurarnos de que sea el contexto de la pantalla principal
-//                             _confirmDeleteService(services[index].id!, services[index].title, context); 
+//                             _confirmDeleteService(services[index].id!, services[index].title, context);
 //                           },
 //                         );
 //                       } else {
@@ -331,139 +326,140 @@ class _BusinessViewState extends State<BusinessView> {
 //   );
 // }
 
-void showFloatingPanel(BuildContext context, bool isSuccess) {
-  Future.delayed(Duration.zero, () {
-    OverlayEntry overlayEntry = OverlayEntry(
-      builder: (overlayContext) => Positioned(
-        top: MediaQuery.of(overlayContext).size.height * 0.4,
-        left: MediaQuery.of(overlayContext).size.width * 0.1,
-        right: MediaQuery.of(overlayContext).size.width * 0.1,
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 5,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isSuccess ? Icons.check_circle_outline : Icons.error_outline,
-                  color: isSuccess ? Colors.green : Colors.red,
-                  size: 60,
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    isSuccess ? "Deleted service successfully" : "Service not deleted",
-                    style: TextStyle(fontSize: 16),
+  void showFloatingPanel(BuildContext context, bool isSuccess) {
+    Future.delayed(Duration.zero, () {
+      OverlayEntry overlayEntry = OverlayEntry(
+        builder: (overlayContext) => Positioned(
+          top: MediaQuery.of(overlayContext).size.height * 0.4,
+          left: MediaQuery.of(overlayContext).size.width * 0.1,
+          right: MediaQuery.of(overlayContext).size.width * 0.1,
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              padding: EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 5,
+                    spreadRadius: 2,
                   ),
-                ),
-              ],
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    isSuccess
+                        ? Icons.check_circle_outline
+                        : Icons.error_outline,
+                    color: isSuccess ? Colors.green : Colors.red,
+                    size: 60,
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      isSuccess
+                          ? "Deleted service successfully"
+                          : "Service not deleted",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    Overlay.of(context)?.insert(overlayEntry);
+      Overlay.of(context)?.insert(overlayEntry);
 
-    // Eliminar el overlay después de un corto período
-    Future.delayed(Duration(seconds: 3), () {
-      overlayEntry.remove();
+      // Eliminar el overlay después de un corto período
+      Future.delayed(Duration(seconds: 3), () {
+        overlayEntry.remove();
+      });
     });
-  });
-}
+  }
 
+  void _deleteServicesPanel() async {
+    final services = await _businessService.getBusinessServices(widget.token);
+    if (services != null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext localContext) {
+          return Dialog(
+            child: Container(
+              padding: const EdgeInsets.all(20.0),
+              height: MediaQuery.of(localContext).size.height * 0.5,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: services.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        if (services[index].id != null) {
+                          return ListTile(
+                            title: Text(services[index].title ?? "No title"),
+                            onTap: () {
+                              Navigator.of(localContext).pop();
+                              _confirmDeleteService(services[index].id!,
+                                  services[index].title, context);
+                            },
+                          );
+                        } else {
+                          return ListTile(
+                            title: Text(services[index].title ?? "No title"),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      showFloatingPanel(context, false);
+    }
+  }
 
-void _deleteServicesPanel() async {
-  final services = await _businessService.getBusinessServices(widget.token);
-  if (services != null) {
+  void _confirmDeleteService(
+      int serviceId, String? serviceName, BuildContext context) async {
     showDialog(
       context: context,
       builder: (BuildContext localContext) {
-        return Dialog(
-          child: Container(
-            padding: const EdgeInsets.all(20.0),
-            height: MediaQuery.of(localContext).size.height * 0.5,
-            child: Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: services.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      if (services[index].id != null) {
-                        return ListTile(
-                          title: Text(services[index].title ?? "No title"),
-                          onTap: () {
-                            Navigator.of(localContext).pop();
-                            _confirmDeleteService(services[index].id!, services[index].title, context); 
-                          },
-                        );
-                      } else {
-                        return ListTile(
-                          title: Text(services[index].title ?? "No title"),
-                        );
-                      }
-                    },
-                  ),
-                ),
-              ],
+        return AlertDialog(
+          title: Text("Eliminar Servicio"),
+          content: Text(
+              "¿Deseas eliminar el servicio '${serviceName ?? "Sin título"}'?"),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Cancelar"),
+              onPressed: () => Navigator.of(localContext).pop(),
             ),
-          ),
+            TextButton(
+              child: Text("Eliminar"),
+              onPressed: () async {
+                try {
+                  await _businessService.deleteService(widget.token, serviceId);
+                  Navigator.of(localContext)
+                      .pop(); // Cerrar el diálogo de confirmación
+                  showFloatingPanel(context, true); // Muestra el panel de éxito
+                } catch (e) {
+                  showFloatingPanel(
+                      context, false); // Muestra el panel de error
+                }
+              },
+            ),
+          ],
         );
       },
     );
-  } else {
-    showFloatingPanel(context, false);
   }
-}
-
-void _confirmDeleteService(int serviceId, String? serviceName, BuildContext context) async {
-  showDialog(
-    context: context,
-    builder: (BuildContext localContext) {
-      return AlertDialog(
-        title: Text("Eliminar Servicio"),
-        content: Text("¿Deseas eliminar el servicio '${serviceName ?? "Sin título"}'?"),
-        actions: <Widget>[
-          TextButton(
-            child: Text("Cancelar"),
-            onPressed: () => Navigator.of(localContext).pop(),
-          ),
-          TextButton(
-            child: Text("Eliminar"),
-            onPressed: () async {
-              try {
-                await _businessService.deleteService(widget.token, serviceId);
-                Navigator.of(localContext).pop(); // Cerrar el diálogo de confirmación
-                showFloatingPanel(context, true); // Muestra el panel de éxito
-              } catch (e) {
-                showFloatingPanel(context, false); // Muestra el panel de error
-              }
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-
-
-
-
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -513,8 +509,10 @@ void _confirmDeleteService(int serviceId, String? serviceName, BuildContext cont
                       Icons.edit,
                       'Actualizar un servicio de la empresa logueada',
                       () => {}),
-                  _buildButtonWithIconAndText(Icons.delete,
-                      'Eliminar un servicio de la empresa logueada', _deleteServicesPanel),
+                  _buildButtonWithIconAndText(
+                      Icons.delete,
+                      'Eliminar un servicio de la empresa logueada',
+                      _deleteServicesPanel),
                   _buildButtonWithIconAndText(
                       Icons.filter_list,
                       'Recuperar los servicios de una empresa filtrando por familia profesional',
