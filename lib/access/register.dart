@@ -1,8 +1,16 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:spring_ud4_grupo1_app/access/login.dart';
+import 'package:spring_ud4_grupo1_app/models/StudentModel.dart';
+import 'package:spring_ud4_grupo1_app/services/userService.dart';
 
 class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _RegisterPageState createState() => _RegisterPageState();
 }
 
@@ -14,6 +22,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _verifyPasswordController =
       TextEditingController();
+  final UserService _userService = UserService();
 
   // Valor actual seleccionado para el Dropdown
   String _selectedProfession = 'IT';
@@ -127,15 +136,13 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 20),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.blue, // Color del botón
-                      onPrimary: Colors.white, // Color del texto del botón
-                      shape: const StadiumBorder(), // Forma redondeada del botón
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blue,
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 40, vertical: 15),
                     ),
-                    onPressed: () {
-                      // Implementar la funcionalidad de registro
-                    },
+                    onPressed: _validateFields,
                     child: const Text('Register'),
                   ),
                 ],
@@ -145,6 +152,56 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _validateFields() async {
+    if (_nameController.text.isEmpty ||
+        _usernameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
+        _verifyPasswordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Some fields are empty',
+            style: TextStyle(color: Colors.red, fontSize: 16),
+          ),
+        ),
+      );
+    } else {
+      final studentModel = StudentModel(
+        name: _nameController.text,
+        surname: _usernameController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+        profesionalFamily: _selectedProfession,
+      );
+      final registeredUser = await _userService.register(studentModel);
+
+      if (registeredUser != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'User registered successfully',
+              style: TextStyle(color: Colors.green, fontSize: 16),
+            ),
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginPage()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Error registering user',
+              style: TextStyle(color: Colors.red, fontSize: 16),
+            ),
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildTextField({
