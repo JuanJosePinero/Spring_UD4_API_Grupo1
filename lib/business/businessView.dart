@@ -555,7 +555,7 @@ class _BusinessViewState extends State<BusinessView> {
                                 .pop(); // Cierra el panel flotante
                             // Aquí puedes llamar a otro método que maneje la acción deseada tras seleccionar una familia profesional
                             // Por ejemplo, cargar servicios específicos para esa familia profesional
-                            // _showServicesForProFamily(proFamily.id);
+                            _showServicesForProFamily(proFamily.id!);
                           },
                         );
                       },
@@ -571,6 +571,40 @@ class _BusinessViewState extends State<BusinessView> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content: Text("No se pudieron cargar las familias profesionales")),
+      );
+    }
+  }
+
+  void _showServicesForProFamily(int proFamilyId) async {
+    try {
+      // Obtener los servicios para la familia profesional seleccionada
+      final services = await _businessService.getBusinessProFamServices(
+        widget.token,
+        proFamilyId,
+      );
+
+      if (services != null && services.isNotEmpty) {
+        // Mostrar los servicios en una nueva página
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => BusinessCards(servicios: services),
+          ),
+        );
+      } else {
+        // Mostrar mensaje de error si no hay servicios
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                "No se encontraron servicios para esta familia profesional"),
+          ),
+        );
+      }
+    } catch (e) {
+      // Manejar cualquier error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error al recuperar servicios: $e"),
+        ),
       );
     }
   }
