@@ -1,21 +1,19 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:spring_ud4_grupo1_app/access/login.dart';
+import 'package:spring_ud4_grupo1_app/models/ProFamilyModel.dart';
 import 'package:spring_ud4_grupo1_app/models/StudentModel.dart';
+import 'package:spring_ud4_grupo1_app/services/proFamilyService.dart';
 import 'package:spring_ud4_grupo1_app/services/userService.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _RegisterPageState createState() => _RegisterPageState();
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  // Controladores para los TextFields
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -23,29 +21,40 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _verifyPasswordController =
       TextEditingController();
   final UserService _userService = UserService();
+  final ProFamilyService _proFamilyService = ProFamilyService();
 
-  // Valor actual seleccionado para el Dropdown
-  String _selectedProfession = 'IT';
-  int a = 1;
+  String _selectedProfession = '';
+  List<ProFamilyModel> _professionalFamilies = [];
 
-  // Lista de familias profesionales
-  final List<String> _professionalFamily = [
-    'IT',
-    'Healthcare',
-    'Engineering',
-    'Education',
-    'Business'
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadProfessionalFamilies();
+  }
 
   @override
   void dispose() {
-    // Limpieza de los controladores cuando el widget se desmonte
     _nameController.dispose();
     _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _verifyPasswordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadProfessionalFamilies() async {
+    try {
+      final families =
+          await _proFamilyService.getProfesionalFamiliesWithoutToken();
+      setState(() {
+        _professionalFamilies = families;
+        _selectedProfession = _professionalFamilies.isNotEmpty
+            ? _professionalFamilies.first.name ?? ''
+            : '';
+      });
+    } catch (e) {
+      print('Error loading professional families: $e');
+    }
   }
 
   @override
@@ -90,8 +99,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     icon: Icons.person_outline,
                   ),
                   const SizedBox(height: 20),
-                  DropdownButtonFormField<String>(
-                    value: _selectedProfession,
+                  DropdownButtonFormField<ProFamilyModel>(
+                    value: _professionalFamilies.isNotEmpty
+                        ? _professionalFamilies.first
+                        : null,
                     decoration: InputDecoration(
                       labelText: 'Professional Family',
                       contentPadding: const EdgeInsets.symmetric(
@@ -100,16 +111,17 @@ class _RegisterPageState extends State<RegisterPage> {
                         borderRadius: BorderRadius.circular(25.0),
                       ),
                     ),
-                    onChanged: (String? newValue) {
+                    onChanged: (ProFamilyModel? newValue) {
                       setState(() {
-                        _selectedProfession = newValue!;
+                        _selectedProfession = newValue?.name ?? '';
                       });
                     },
-                    items: _professionalFamily
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
+                    items: _professionalFamilies
+                        .map<DropdownMenuItem<ProFamilyModel>>(
+                            (ProFamilyModel value) {
+                      return DropdownMenuItem<ProFamilyModel>(
                         value: value,
-                        child: Text(value),
+                        child: Text(value.name ?? ''),
                       );
                     }).toList(),
                   ),
@@ -156,48 +168,50 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _validateFields() async {
-  if (_nameController.text.isEmpty || _usernameController.text.isEmpty || _professionalFamily.isEmpty ||
-      _emailController.text.isEmpty ||
-      _passwordController.text.isEmpty || _verifyPasswordController.text.isEmpty || _passwordController.text != _verifyPasswordController.text) {
-      _showSnackBar("Invalid credentials or empty fields", Icons.error, Colors.red);
-  } else {
-    try {
-      final studentModel = StudentModel(
-        name: _nameController.text,
-        surname: _usernameController.text,
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
+    if (_nameController.text.isEmpty ||
+        _usernameController.text.isEmpty ||
+        _selectedProfession.isEmpty ||
+        _emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
+        _verifyPasswordController.text.isEmpty ||
+        _passwordController.text != _verifyPasswordController.text) {
+      _showSnackBar(
+          "Invalid credentials or empty fields", Icons.error, Colors.red);
+    } else {
+      try {
+        final studentModel = StudentModel(
+          name: _nameController.text,
+          surname: _usernameController.text,
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
 
-      final registeredUser = await _userService.register(studentModel);
+        final registeredUser = await _userService.register(studentModel);
 
+        if (registeredUser != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('User created successfully'),
+              duration: Duration(seconds: 4),
+            ),
+          );
 
-  if (registeredUser != null) {
-    // Mostrar Snackbar con mensaje de éxito
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('User created succesfully'),
-        duration: Duration(seconds: 4),
-      ),
-    );
-
-    // Esperar 4 segundos y luego navegar a la pantalla de inicio de sesión
-    Future.delayed(Duration(seconds: 4), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginPage()),
-      );
-    });
-  } else {
-    _showSnackBar("User cant be created", Icons.error, Colors.red);
+          Future.delayed(const Duration(seconds: 4), () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => LoginPage()),
+            );
+          });
+        } else {
+          _showSnackBar("User can't be created", Icons.error, Colors.red);
+        }
+      } catch (e) {
+        _showSnackBar("Error registering: $e", Icons.error, Colors.red);
+      }
+    }
   }
-} catch (e) {
-  _showSnackBar("Error registering: $e", Icons.error, Colors.red);
-}
-  }
-}
 
-void _showSnackBar(String message, IconData icon, Color color) {
+  void _showSnackBar(String message, IconData icon, Color color) {
     final snackBar = SnackBar(
       content: Row(
         children: <Widget>[
@@ -209,7 +223,6 @@ void _showSnackBar(String message, IconData icon, Color color) {
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
-
 
   Widget _buildTextField({
     required TextEditingController controller,

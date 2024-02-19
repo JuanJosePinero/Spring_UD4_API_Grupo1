@@ -23,4 +23,22 @@ class ProFamilyService {
       throw Exception('Failed to load professional families');
     }
   }
+
+  Future<List<ProFamilyModel>> getProfesionalFamiliesWithoutToken() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/proFamily/all'),
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> body = jsonDecode(response.body);
+      final List<ProFamilyModel> proFamilies =
+          body.map((dynamic item) => ProFamilyModel.fromJson(item)).toList();
+      return proFamilies;
+    } else {
+      print(
+          'Failed to load professional families. Status code: ${response.statusCode}');
+      print('Response body: ${response.body}');
+      throw Exception('Failed to load professional families');
+    }
+  }
 }
