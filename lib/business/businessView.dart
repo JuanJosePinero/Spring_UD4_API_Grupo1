@@ -170,85 +170,93 @@ class _BusinessViewState extends State<BusinessView> {
   }
 
   void _showCreateServicePanel() {
-    final _titleController = TextEditingController();
-    final _descriptionController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return FutureBuilder(
-          future:
-              _loadProFamilies(),
-          builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            } else {
-              return AlertDialog(
-                title: const Text("Create New Service"),
-                content: SingleChildScrollView(
-                  child: ListBody(
-                    children: <Widget>[
-                      TextField(
-                        controller: _titleController,
-                        decoration: const InputDecoration(labelText: 'Title'),
-                      ),
-                      TextField(
-                        controller: _descriptionController,
-                        decoration:
-                            const InputDecoration(labelText: 'Description'),
-                      ),
-                      DropdownButton<ProFamilyModel>(
-                        value: _selectedProfesionalFamily,
-                        hint: const Text("Select Professional Family"),
-                        onChanged: (newValue) {
-                          setState(() {
-                            _selectedProfesionalFamily = newValue!;
-                          });
-                        },
-                        items:
-                            _profesionalFamilies.map((ProFamilyModel family) {
-                          return DropdownMenuItem<ProFamilyModel>(
-                            value: family,
-                            child: Text(family.name ?? 'Nombre no disponible'),
-                          );
-                        }).toList(),
-                      ),
-                    ],
-                  ),
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return FutureBuilder(
+        future: _loadProFamilies(),
+        builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            return AlertDialog(
+              title: const Text("Create New Service"),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: <Widget>[
+                    TextField(
+                      controller: _titleController,
+                      decoration: const InputDecoration(labelText: 'Title'),
+                    ),
+                    TextField(
+                      controller: _descriptionController,
+                      decoration: const InputDecoration(labelText: 'Description'),
+                    ),
+                    DropdownButton<ProFamilyModel>(
+                      value: _selectedProfesionalFamily,
+                      hint: const Text("Select Professional Family"),
+                      onChanged: (newValue) {
+                        setState(() {
+                          _selectedProfesionalFamily = newValue!;
+                        });
+                      },
+                      items: _profesionalFamilies.map((ProFamilyModel family) {
+                        return DropdownMenuItem<ProFamilyModel>(
+                          value: family,
+                          child: Text(family.name ?? 'Nombre no disponible'),
+                        );
+                      }).toList(),
+                    ),
+                  ],
                 ),
-                actions: <Widget>[
-                  ElevatedButton(
-                    child: const Text('Accept'),
-                    onPressed: () async {
-                      try {
-                        final newService = ServicioModel(
-                          title: _titleController.text,
-                          description: _descriptionController.text,
-                          profesionalFamilyId: _selectedProfesionalFamily,
-                        );
-                        final createdService = await _businessService
-                            .createService(widget.token, newService);
-                        Navigator.pop(
-                            context); 
-                      } catch (e) {
-                        Navigator.pop(
-                            context); 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(e.toString())),
-                        );
-                      }
-                    },
-                  ),
-                ],
-              );
-            }
-          },
-        );
-      },
-    );
-  }
+              ),
+              actions: <Widget>[
+                ElevatedButton(
+                  child: const Text('Accept'),
+                  onPressed: () async {
+                    try {
+                      final newService = ServicioModel(
+                        title: _titleController.text,
+                        description: _descriptionController.text,
+                        profesionalFamilyId: _selectedProfesionalFamily,
+                      );
+                      final createdService = await _businessService.createService(widget.token, newService);
+                      // Cerrar el diálogo antes de mostrar el SnackBar
+                      Navigator.pop(context); 
+                      // Mostrar el SnackBar
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Row(
+                            children: const [
+                              Icon(Icons.check_circle, color: Colors.green),
+                              SizedBox(width: 8),
+                              Text('Service created successfully'),
+                            ],
+                          ),
+                        ),
+                      );
+                    } catch (e) {
+                      Navigator.pop(context); 
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(e.toString())),
+                      );
+                    }
+                  },
+                ),
+              ],
+            );
+          }
+        },
+      );
+    },
+  );
+}
+
 
   void showFloatingPanel(BuildContext context, bool isSuccess) {
     Future.delayed(Duration.zero, () {
@@ -545,81 +553,89 @@ class _BusinessViewState extends State<BusinessView> {
   }
 
   void _editServiceDetails(ServicioModel service) {
-    final _titleController = TextEditingController(text: service.title);
-    final _descriptionController =
-        TextEditingController(text: service.description);
-    ProFamilyModel? _selectedProfesionalFamily = service.profesionalFamilyId;
+  final _titleController = TextEditingController(text: service.title);
+  final _descriptionController = TextEditingController(text: service.description);
+  ProFamilyModel? _selectedProfesionalFamily = service.profesionalFamilyId;
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Update Service"),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                TextField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(labelText: 'Title'),
-                ),
-                TextField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(labelText: 'Description'),
-                ),
-                DropdownButton<ProFamilyModel>(
-                  value: _selectedProfesionalFamily,
-                  hint: const Text("Select Professional Family"),
-                  onChanged: (newValue) {
-                    setState(() {
-                      _selectedProfesionalFamily = newValue;
-                    });
-                  },
-                  items: _profesionalFamilies.map((ProFamilyModel family) {
-                    return DropdownMenuItem<ProFamilyModel>(
-                      value: family,
-                      child: Text(family.name ?? 'Name not available'),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text("Update Service"),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              TextField(
+                controller: _titleController,
+                decoration: const InputDecoration(labelText: 'Title'),
+              ),
+              TextField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(labelText: 'Description'),
+              ),
+              DropdownButton<ProFamilyModel>(
+                value: _selectedProfesionalFamily,
+                hint: const Text("Select Professional Family"),
+                onChanged: (newValue) {
+                  setState(() {
+                    _selectedProfesionalFamily = newValue;
+                  });
+                },
+                items: _profesionalFamilies.map((ProFamilyModel family) {
+                  return DropdownMenuItem<ProFamilyModel>(
+                    value: family,
+                    child: Text(family.name ?? 'Name not available'),
+                  );
+                }).toList(),
+              ),
+            ],
           ),
-          actions: <Widget>[
-            ElevatedButton(
-              child: const Text('Update'),
-              onPressed: () async {
-                try {
-                  final updatedService = ServicioModel(
-                    id: service.id,
-                    title: _titleController.text,
-                    description: _descriptionController.text,
-                    profesionalFamilyId: _selectedProfesionalFamily,
-                  );
-                  await _businessService.updateService(
-                      widget.token, service.id!, updatedService);
-                  Navigator.pop(
-                      context); 
-                } catch (e) {
-                  Navigator.pop(
-                      context); 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error updating service: $e')),
-                  );
-                }
-              },
-            ),
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.pop(
-                    context); 
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+        ),
+        actions: <Widget>[
+          ElevatedButton(
+            child: const Text('Update'),
+            onPressed: () async {
+              try {
+                final updatedService = ServicioModel(
+                  id: service.id,
+                  title: _titleController.text,
+                  description: _descriptionController.text,
+                  profesionalFamilyId: _selectedProfesionalFamily,
+                );
+                await _businessService.updateService(widget.token, service.id!, updatedService);
+                Navigator.pop(context); // Cerrar el diálogo antes de mostrar el SnackBar
+                // Mostrar el SnackBar
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: const [
+                        Icon(Icons.check_circle, color: Colors.green),
+                        SizedBox(width: 8),
+                        Text('Service updated successfully'),
+                      ],
+                    ),
+                  ),
+                );
+              } catch (e) {
+                Navigator.pop(context); // Cerrar el diálogo en caso de error
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error updating service: $e')),
+                );
+              }
+            },
+          ),
+          TextButton(
+            child: const Text('Cancel'),
+            onPressed: () {
+              Navigator.pop(context); // Cerrar el diálogo si el usuario cancela
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
   void _showProFamiliesPanel() async {
     final proFamilies =
