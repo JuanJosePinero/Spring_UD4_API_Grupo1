@@ -52,7 +52,6 @@ class _BusinessViewState extends State<BusinessView> {
             builder: (context) => BusinessCards(servicios: services),
           ),
         );
-        print("$services");
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -206,7 +205,7 @@ class _BusinessViewState extends State<BusinessView> {
               Future.delayed(const Duration(seconds: 2)), // Espera 2 segundos
           builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
+              return const Center(
                 child: CircularProgressIndicator(),
               );
             } else {
@@ -292,69 +291,38 @@ class _BusinessViewState extends State<BusinessView> {
     );
   }
 
-  void showFloatingPanel(BuildContext context, bool isSuccess) {
-    Future.delayed(Duration.zero, () {
-      OverlayEntry overlayEntry = OverlayEntry(
-        builder: (overlayContext) => Positioned(
-          top: MediaQuery.of(overlayContext).size.height * 0.4,
-          left: MediaQuery.of(overlayContext).size.width * 0.1,
-          right: MediaQuery.of(overlayContext).size.width * 0.1,
-          child: Material(
-            color: Colors.transparent,
+  void _deleteServicesPanel() async {
+    try {
+      showDialog(
+        context: context,
+        builder: (BuildContext localContext) {
+          return Dialog(
             child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 5,
-                    spreadRadius: 2,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+              padding: const EdgeInsets.all(20.0),
+              height: MediaQuery.of(localContext).size.height * 0.5,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    isSuccess
-                        ? Icons.check_circle_outline
-                        : Icons.error_outline,
-                    color: isSuccess ? Colors.green : Colors.red,
-                    size: 60,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      isSuccess
-                          ? "Deleted service successfully"
-                          : "Service not deleted",
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
+                  const CircularProgressIndicator(), // Indicador de carga
+                  const SizedBox(
+                      height:
+                          20), // Espacio para separar el indicador del texto
+                  const Text(
+                      'Loading...'), // Texto para indicar que se está cargando
                 ],
               ),
             ),
-          ),
-        ),
+          );
+        },
       );
 
-      Overlay.of(context)?.insert(overlayEntry);
-
-      Future.delayed(const Duration(seconds: 3), () {
-        overlayEntry.remove();
-      });
-    });
-  }
-
-  void _deleteServicesPanel() async {
-    _showLoadingDialog();
-    try {
       final services = await _businessService.getBusinessServices(widget.token);
-      Navigator.pop(context);
+
+      Navigator.pop(
+          context); // Cerrar el diálogo de carga después de obtener la respuesta del servicio
+
       if (services != null) {
-        showDialog(
+        final deleted = await showDialog<bool>(
           context: context,
           builder: (BuildContext localContext) {
             return Dialog(
@@ -370,10 +338,18 @@ class _BusinessViewState extends State<BusinessView> {
                           if (services[index].id != null) {
                             return ListTile(
                               title: Text(services[index].title ?? "No title"),
-                              onTap: () {
-                                Navigator.of(localContext).pop();
-                                _confirmDeleteService(services[index].id!,
-                                    services[index].title, context);
+                              onTap: () async {
+                                final deleted = await _confirmDeleteService(
+                                  services[index].id!,
+                                  services[index].title,
+                                  context,
+                                );
+                                if (deleted) {
+                                  setState(() {
+                                    // Remove the deleted service from the list
+                                    services.removeAt(index);
+                                  });
+                                }
                               },
                             );
                           } else {
@@ -390,41 +366,61 @@ class _BusinessViewState extends State<BusinessView> {
             );
           },
         );
-      } else {
-        showFloatingPanel(context, false);
+
+        if (deleted != null && deleted) {
+          // Service was deleted, update the UI
+          setState(() {});
+        }
       }
     } catch (e) {
-      Navigator.pop(
-          context); // Asegurarse de cerrar el diálogo de carga en caso de un error
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error al cargar familias profesionales: $e")),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error al cargar familias profesionales: $e")),
+        );
+      }
     }
   }
 
-  void _confirmDeleteService(
+  Future<bool> _confirmDeleteService(
       int serviceId, String? serviceName, BuildContext context) async {
-    showDialog(
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext localContext) {
         return AlertDialog(
-          title: const Text("Delete Service"),
+          title: const Text("Confirm Deletion"),
           content: Text(
-              "¿Do you want to delete the service '${serviceName ?? "No title"}'?"),
+            "Are you sure you want to delete the service '${serviceName ?? "No title"}'?",
+          ),
           actions: <Widget>[
             TextButton(
               child: const Text("Cancel"),
-              onPressed: () => Navigator.of(localContext).pop(),
+              onPressed: () => Navigator.of(localContext).pop(false),
             ),
             TextButton(
               child: const Text("Delete"),
               onPressed: () async {
+                Navigator.of(localContext)
+                    .pop(true); // Close the confirmation dialog
                 try {
                   await _businessService.deleteService(widget.token, serviceId);
-                  Navigator.of(localContext).pop();
-                  showFloatingPanel(context, true);
+                  // Show green check and "Service deleted" message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Row(
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.green),
+                          SizedBox(width: 8),
+                          Text("Service deleted",
+                              style: TextStyle(color: Colors.green)),
+                        ],
+                      ),
+                    ),
+                  );
+                  Navigator.pop(context);
                 } catch (e) {
-                  showFloatingPanel(context, false);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Error deleting service: $e")),
+                  );
                 }
               },
             ),
@@ -432,6 +428,8 @@ class _BusinessViewState extends State<BusinessView> {
         );
       },
     );
+
+    return confirmed ?? false;
   }
 
   @override
@@ -819,7 +817,6 @@ class _BusinessViewState extends State<BusinessView> {
   }
 
   String _formatDate(DateTime? date) {
-    print(date);
     if (date == null) return "No date";
     return "${date.day}-${date.month}-${date.year}";
   }
