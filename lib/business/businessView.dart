@@ -648,35 +648,51 @@ class _BusinessViewState extends State<BusinessView> {
                 ElevatedButton(
                   child: const Text('Update'),
                   onPressed: () async {
-                    try {
-                      final updatedService = ServicioModel(
-                        id: service.id,
-                        title: _titleController.text,
-                        description: _descriptionController.text,
-                        profesionalFamilyId: _selectedProfesionalFamily,
-                        // Ajusta los campos según tu modelo de datos
-                      );
-                      await _businessService.updateService(
-                          widget.token, service.id!, updatedService);
-                      Navigator.pop(
-                          context); // Cierra el diálogo después de la operación exitosa
+                    if (_selectedProfesionalFamily == null ||
+                        _titleController.text.isEmpty ||
+                        _titleController.text.length > 30 ||
+                        _descriptionController.text.isEmpty ||
+                        _descriptionController.text.length > 60) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Row(
                             children: [
                               Icon(Icons.check_circle, color: Colors.green),
                               SizedBox(width: 8),
-                              Text('Service updated successfully'),
+                              Text('Please fill all the fields '),
                             ],
                           ),
                         ),
                       );
-                    } catch (e) {
-                      Navigator.pop(
-                          context); // También cierra el diálogo si hay un error
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error updating service: $e')),
-                      );
+                    } else {
+                      try {
+                        final updatedService = ServicioModel(
+                          id: service.id,
+                          title: _titleController.text,
+                          description: _descriptionController.text,
+                          profesionalFamilyId: _selectedProfesionalFamily,
+                        );
+                        await _businessService.updateService(
+                            widget.token, service.id!, updatedService);
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Row(
+                              children: [
+                                Icon(Icons.check_circle, color: Colors.green),
+                                SizedBox(width: 8),
+                                Text('Service updated successfully'),
+                              ],
+                            ),
+                          ),
+                        );
+                      } catch (e) {
+                        Navigator.pop(
+                            context); // También cierra el diálogo si hay un error
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error updating service: $e')),
+                        );
+                      }
                     }
                   },
                 ),

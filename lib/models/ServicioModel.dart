@@ -64,8 +64,8 @@ class ServicioModel {
       'registerDate': registerDate?.toIso8601String(),
       'happeningDate': happeningDate?.toIso8601String(),
       'studentId': studentId,
-      'businessId': businessId,
-      'profesionalFamilyId': profesionalFamilyId,
+      'businessId': businessId?.toJson(), // Asegúrate de llamar a toJson() aquí
+      'profesionalFamilyId': profesionalFamilyId?.toJson(), // Y aquí también
       'valoration': valoration,
       'finished': finished,
       'comment': comment,
