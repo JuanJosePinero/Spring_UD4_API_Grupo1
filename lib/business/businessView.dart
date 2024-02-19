@@ -20,7 +20,7 @@ class BusinessView extends StatefulWidget {
 class _BusinessViewState extends State<BusinessView> {
   late BusinessService _businessService;
   late ProFamilyService
-      _proFamilyService; // Servicio para las familias profesionales
+      _proFamilyService; 
   List<ServicioModel> _services = [];
   List<ProFamilyModel> _profesionalFamilies = [];
   ProFamilyModel? _selectedProfesionalFamily;
@@ -35,7 +35,7 @@ class _BusinessViewState extends State<BusinessView> {
 
   Future<void> _loadProFamilies() async {
     final families = await _proFamilyService.getProfesionalFamilies(
-        'Bearer${widget.token}'); // Asume que tienes este método
+        'Bearer${widget.token}'); 
     setState(() {
       _profesionalFamilies = families;
     });
@@ -53,14 +53,12 @@ class _BusinessViewState extends State<BusinessView> {
         );
         print("$services");
       } else {
-        // Mostrar mensaje de error si no hay servicios
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text("No se pudieron recuperar los servicios")),
         );
       }
     } catch (e) {
-      // Manejar cualquier otro error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Error: $e")),
       );
@@ -107,12 +105,11 @@ class _BusinessViewState extends State<BusinessView> {
                       itemCount: services.length,
                       itemBuilder: (BuildContext context, int index) {
                         return ListTile(
-                          title: Text(services[index].title ?? "Sin título"),
+                          title: Text(services[index].title ?? "No title"),
                           onTap: () {
                             Navigator.of(context)
-                                .pop(); // Usamos el context del builder
-                            // Corregido para llamar al método con el contexto correcto y el ID de servicio
-                            _showSpecificServiceDetailsPanel(
+                                .pop(); 
+                                _showSpecificServiceDetailsPanel(
                                 services[index].id);
                           },
                         );
@@ -156,7 +153,8 @@ class _BusinessViewState extends State<BusinessView> {
                   Text("Título: ${serviceDetails.title}"),
                   const SizedBox(height: 10),
                   Text("Descripción: ${serviceDetails.description}"),
-                  // Agrega aquí más detalles que quieras mostrar
+                  const SizedBox(height: 10,),
+                  Text("Date: ${_formatDate(serviceDetails.registerDate)}")
                 ],
               ),
             ),
@@ -180,14 +178,13 @@ class _BusinessViewState extends State<BusinessView> {
       builder: (BuildContext context) {
         return FutureBuilder(
           future:
-              _loadProFamilies(), // Llama a la función _loadProFamilies aquí
+              _loadProFamilies(),
           builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(
                 child: CircularProgressIndicator(),
               );
             } else {
-              // Una vez que las familias profesionales estén disponibles, muestra el diálogo de creación de servicio
               return AlertDialog(
                 title: const Text("Create New Service"),
                 content: SingleChildScrollView(
@@ -234,10 +231,10 @@ class _BusinessViewState extends State<BusinessView> {
                         final createdService = await _businessService
                             .createService(widget.token, newService);
                         Navigator.pop(
-                            context); // Cierra el diálogo después de la operación exitosa
+                            context); 
                       } catch (e) {
                         Navigator.pop(
-                            context); // También cierra el diálogo si hay un error
+                            context); 
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(e.toString())),
                         );
@@ -252,91 +249,6 @@ class _BusinessViewState extends State<BusinessView> {
       },
     );
   }
-
-  // Método modificado para incluir un botón de eliminación en cada ListTile
-// void _deleteServicesPanel() async {
-//   final services = await _businessService.getBusinessServices(widget.token);
-//   if (services != null) {
-//     showDialog(
-//       context: context,
-//       builder: (BuildContext localContext) {
-//         return Dialog(
-//           child: Container(
-//             padding: const EdgeInsets.all(20.0),
-//             height: MediaQuery.of(localContext).size.height * 0.5,
-//             child: Column(
-//               children: [
-//                 Expanded(
-//                   child: ListView.builder(
-//                     itemCount: services.length,
-//                     itemBuilder: (BuildContext context, int index) {
-//                       if (services[index].id != null) {
-//                         return ListTile(
-//                           title: Text(services[index].title ?? "No title"),
-//                           onTap: () {
-//                             Navigator.of(localContext).pop();
-//                             // Aquí pasamos 'context' en lugar de 'localContext' para asegurarnos de que sea el contexto de la pantalla principal
-//                             _confirmDeleteService(services[index].id!, services[index].title, context);
-//                           },
-//                         );
-//                       } else {
-//                         return ListTile(
-//                           title: Text(services[index].title ?? "No title"),
-//                         );
-//                       }
-//                     },
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ),
-//         );
-//       },
-//     );
-//   } else {
-//     ScaffoldMessenger.of(context).showSnackBar(
-//       SnackBar(content: Text("No se pudieron cargar los servicios")),
-//     );
-//   }
-// }
-
-// void _confirmDeleteService(int serviceId, String? serviceName, BuildContext mainContext) async {
-//   showDialog(
-//     context: mainContext,
-//     builder: (BuildContext localContext) {
-//       return AlertDialog(
-//         title: Text("Eliminar Servicio"),
-//         content: Text("¿Deseas eliminar el servicio '${serviceName ?? "Sin título"}'?"),
-//         actions: <Widget>[
-//           TextButton(
-//             child: Text("Cancelar"),
-//             onPressed: () => Navigator.of(localContext).pop(),
-//           ),
-//           TextButton(
-//             child: Text("Eliminar"),
-//             onPressed: () async {
-//               try {
-//                 await _businessService.deleteService(widget.token, serviceId);
-//                 Navigator.of(localContext).pop(); // Cerrar el diálogo de confirmación
-//                 // Aquí, usamos 'mainContext' para mostrar el SnackBar desde el contexto de la pantalla principal
-//                 showCustomSnackBar(mainContext, "Servicio eliminado exitosamente");
-//               } catch (e) {
-//                 showCustomSnackBar(mainContext, "Error al eliminar el servicio: $e");
-//               }
-//             },
-//           ),
-//         ],
-//       );
-//     },
-//   );
-// }
-
-// void showCustomSnackBar(BuildContext context, String message) {
-//   final scaffold = ScaffoldMessenger.of(context);
-//   scaffold.showSnackBar(
-//     SnackBar(content: Text(message)),
-//   );
-// }
 
   void showFloatingPanel(BuildContext context, bool isSuccess) {
     Future.delayed(Duration.zero, () {
@@ -388,7 +300,6 @@ class _BusinessViewState extends State<BusinessView> {
 
       Overlay.of(context)?.insert(overlayEntry);
 
-      // Eliminar el overlay después de un corto período
       Future.delayed(const Duration(seconds: 3), () {
         overlayEntry.remove();
       });
@@ -445,25 +356,25 @@ class _BusinessViewState extends State<BusinessView> {
       context: context,
       builder: (BuildContext localContext) {
         return AlertDialog(
-          title: const Text("Eliminar Servicio"),
+          title: const Text("Delete Service"),
           content: Text(
-              "¿Deseas eliminar el servicio '${serviceName ?? "Sin título"}'?"),
+              "¿Do you want to delete the service '${serviceName ?? "No title"}'?"),
           actions: <Widget>[
             TextButton(
-              child: const Text("Cancelar"),
+              child: const Text("Cancel"),
               onPressed: () => Navigator.of(localContext).pop(),
             ),
             TextButton(
-              child: const Text("Eliminar"),
+              child: const Text("Delete"),
               onPressed: () async {
                 try {
                   await _businessService.deleteService(widget.token, serviceId);
                   Navigator.of(localContext)
-                      .pop(); // Cerrar el diálogo de confirmación
-                  showFloatingPanel(context, true); // Muestra el panel de éxito
+                      .pop(); 
+                  showFloatingPanel(context, true); 
                 } catch (e) {
                   showFloatingPanel(
-                      context, false); // Muestra el panel de error
+                      context, false);
                 }
               },
             ),
@@ -529,7 +440,7 @@ class _BusinessViewState extends State<BusinessView> {
               ),
             ],
           ),
-          const SizedBox(height: 20), // Espaciado entre filas
+          const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -556,7 +467,7 @@ class _BusinessViewState extends State<BusinessView> {
               ),
             ],
           ),
-          const SizedBox(height: 20), // Espaciado entre filas
+          const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -595,7 +506,6 @@ class _BusinessViewState extends State<BusinessView> {
 
   void _showAllServicesForUpdate() async {
     try {
-      // Obtener todos los servicios de la empresa
       final services = await _businessService.getBusinessServices(widget.token);
 
       if (services != null && services.isNotEmpty) {
@@ -611,9 +521,9 @@ class _BusinessViewState extends State<BusinessView> {
                       title: Text(service.title ?? 'No title'),
                       onTap: () {
                         Navigator.pop(
-                            context); // Cerrar el diálogo de selección
+                            context);
                         _editServiceDetails(
-                            service); // Mostrar detalles del servicio seleccionado para edición
+                            service);
                       },
                     );
                   }).toList(),
@@ -667,7 +577,7 @@ class _BusinessViewState extends State<BusinessView> {
                   items: _profesionalFamilies.map((ProFamilyModel family) {
                     return DropdownMenuItem<ProFamilyModel>(
                       value: family,
-                      child: Text(family.name ?? 'Nombre no disponible'),
+                      child: Text(family.name ?? 'Name not available'),
                     );
                   }).toList(),
                 ),
@@ -684,15 +594,14 @@ class _BusinessViewState extends State<BusinessView> {
                     title: _titleController.text,
                     description: _descriptionController.text,
                     profesionalFamilyId: _selectedProfesionalFamily,
-                    // Ajusta los campos según tu modelo de datos
                   );
                   await _businessService.updateService(
                       widget.token, service.id!, updatedService);
                   Navigator.pop(
-                      context); // Cierra el diálogo después de la operación exitosa
+                      context); 
                 } catch (e) {
                   Navigator.pop(
-                      context); // También cierra el diálogo si hay un error
+                      context); 
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Error updating service: $e')),
                   );
@@ -703,7 +612,7 @@ class _BusinessViewState extends State<BusinessView> {
               child: const Text('Cancel'),
               onPressed: () {
                 Navigator.pop(
-                    context); // Cierra el diálogo sin realizar cambios
+                    context); 
               },
             ),
           ],
@@ -731,12 +640,10 @@ class _BusinessViewState extends State<BusinessView> {
                       itemBuilder: (BuildContext context, int index) {
                         final proFamily = proFamilies[index];
                         return ListTile(
-                          title: Text(proFamily.name ?? "Sin nombre"),
+                          title: Text(proFamily.name ?? "No name"),
                           onTap: () {
                             Navigator.of(context)
-                                .pop(); // Cierra el panel flotante
-                            // Aquí puedes llamar a otro método que maneje la acción deseada tras seleccionar una familia profesional
-                            // Por ejemplo, cargar servicios específicos para esa familia profesional
+                                .pop();
                             _showServicesForProFamily(proFamily.id!);
                           },
                         );
@@ -824,5 +731,11 @@ class _BusinessViewState extends State<BusinessView> {
         ],
       ),
     );
+  }
+
+  String _formatDate(DateTime? date) {
+    print(date);
+    if (date == null) return "No date";
+    return "${date.day}-${date.month}-${date.year}";
   }
 }
