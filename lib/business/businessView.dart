@@ -520,7 +520,7 @@ class _BusinessViewState extends State<BusinessView> {
                   _buildButtonWithIconAndText(
                       Icons.edit,
                       'Actualizar un servicio de la empresa logueada',
-                      () => {}),
+                      _showAllServicesForUpdate),
                   _buildButtonWithIconAndText(
                       Icons.delete,
                       'Eliminar un servicio de la empresa logueada',
@@ -535,6 +535,125 @@ class _BusinessViewState extends State<BusinessView> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showAllServicesForUpdate() async {
+    try {
+      // Obtener todos los servicios de la empresa
+      final services = await _businessService.getBusinessServices(widget.token);
+
+      if (services != null && services.isNotEmpty) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Select Service"),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: services.map((ServicioModel service) {
+                    return ListTile(
+                      title: Text(service.title ?? 'No title'),
+                      onTap: () {
+                        Navigator.pop(
+                            context); // Cerrar el diálogo de selección
+                        _editServiceDetails(
+                            service); // Mostrar detalles del servicio seleccionado para edición
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+            );
+          },
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No services available for editing")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
+    }
+  }
+
+  void _editServiceDetails(ServicioModel service) {
+    final _titleController = TextEditingController(text: service.title);
+    final _descriptionController =
+        TextEditingController(text: service.description);
+    ProFamilyModel? _selectedProfesionalFamily = service.profesionalFamilyId;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Update Service"),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                TextField(
+                  controller: _titleController,
+                  decoration: const InputDecoration(labelText: 'Title'),
+                ),
+                TextField(
+                  controller: _descriptionController,
+                  decoration: const InputDecoration(labelText: 'Description'),
+                ),
+                DropdownButton<ProFamilyModel>(
+                  value: _selectedProfesionalFamily,
+                  hint: const Text("Select Professional Family"),
+                  onChanged: (newValue) {
+                    setState(() {
+                      _selectedProfesionalFamily = newValue;
+                    });
+                  },
+                  items: _profesionalFamilies.map((ProFamilyModel family) {
+                    return DropdownMenuItem<ProFamilyModel>(
+                      value: family,
+                      child: Text(family.name ?? 'Nombre no disponible'),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              child: const Text('Update'),
+              onPressed: () async {
+                try {
+                  final updatedService = ServicioModel(
+                    id: service.id,
+                    title: _titleController.text,
+                    description: _descriptionController.text,
+                    profesionalFamilyId: _selectedProfesionalFamily,
+                    // Ajusta los campos según tu modelo de datos
+                  );
+                  await _businessService.updateService(
+                      widget.token, service.id!, updatedService);
+                  Navigator.pop(
+                      context); // Cierra el diálogo después de la operación exitosa
+                } catch (e) {
+                  Navigator.pop(
+                      context); // También cierra el diálogo si hay un error
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error updating service: $e')),
+                  );
+                }
+              },
+            ),
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.pop(
+                    context); // Cierra el diálogo sin realizar cambios
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
