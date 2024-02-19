@@ -7,6 +7,7 @@ class StudentModel extends UserModel{
   String? email;
   String? password;
   int? enabled;
+  int? deleted;
   String? role;
   String? token; // Asumiendo que el token también se manejará aquí
   // No hay campos directos para studentID o businessID ya que este es el modelo de estudiante.
@@ -23,6 +24,7 @@ class StudentModel extends UserModel{
     this.enabled,
     this.role,
     this.token,
+    this.deleted,
     this.profesionalFamily,
     this.servicios,
   });
@@ -37,6 +39,7 @@ class StudentModel extends UserModel{
       enabled: json['enabled'],
       role: json['role'],
       token: json['token'],
+      deleted: json['deleted'],
       // Asumiendo conversiones simplificadas para profesionalFamily y servicios
       profesionalFamily: json['profesionalFamily'],
       servicios: List<String>.from(json['servicios'] ?? []),
@@ -53,6 +56,7 @@ class StudentModel extends UserModel{
     data['enabled'] = enabled;
     data['role'] = role;
     data['token'] = token;
+    data['deleted'] = deleted;
     data['profesionalFamily'] = profesionalFamily;
     data['servicios'] = servicios;
     return data;

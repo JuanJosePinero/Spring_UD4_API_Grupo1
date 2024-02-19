@@ -24,33 +24,38 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _login() async {
-    final email = _emailController.text;
-    final password = _passwordController.text;
-    final studentModel = await UserService().login(email, password);
+  final email = _emailController.text;
+  final password = _passwordController.text;
+  final studentModel = await UserService().login(email, password);
 
-    if (studentModel != null) {
+  if (studentModel != null) {
+    // if (studentModel.enabled == 1 || studentModel.deleted == 0) {
       switch (studentModel.role) {
         case "ROLE_STUDENT":
-  Navigator.push(
-    context, 
-    MaterialPageRoute(builder: (context) => StudentView(token: studentModel.token!)),
-  );
-  break;
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => StudentView(token: studentModel.token!)),
+          );
+          break;
         case "ROLE_BUSINESS":
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => BusinessView(token: studentModel.token!)));
+            context, MaterialPageRoute(builder: (context) => BusinessView(token: studentModel.token!)));
           break;
         case "ROLE_ADMIN":
           Navigator.push(context, MaterialPageRoute(builder: (context) => AdminView()));
           break;
         default:
-          _showSnackBar("Role not recognized", Icons.error, Colors.red);
+          _showSnackBar("Rol not found", Icons.error, Colors.red);
           break;
       }
     } else {
-      _showSnackBar("Error validating credentials", Icons.error, Colors.red);
+      _showSnackBar("User not enabled or is deleted", Icons.error, Colors.red);
     }
-  }
+  // } else {
+  //   _showSnackBar("Error validating credentials", Icons.error, Colors.red);
+  // }
+}
+
 
   void _showSnackBar(String message, IconData icon, Color color) {
     final snackBar = SnackBar(
@@ -121,8 +126,8 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 30),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.blue,
-                      onPrimary: Colors.white,
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
                       shape: const StadiumBorder(),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 40, vertical: 15),

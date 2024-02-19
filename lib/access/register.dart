@@ -156,9 +156,10 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _validateFields() async {
-  if (_nameController.text.isEmpty ||
+  if (_nameController.text.isEmpty || _usernameController.text.isEmpty || _professionalFamily.isEmpty ||
       _emailController.text.isEmpty ||
-      _passwordController.text.isEmpty) {
+      _passwordController.text.isEmpty || _verifyPasswordController.text.isEmpty || _passwordController.text != _verifyPasswordController.text) {
+      _showSnackBar("Invalid credentials or empty fields", Icons.error, Colors.red);
   } else {
     try {
       final studentModel = StudentModel(
@@ -170,15 +171,44 @@ class _RegisterPageState extends State<RegisterPage> {
 
       final registeredUser = await _userService.register(studentModel);
 
-      if (registeredUser != null) {
-        // Navegar a la pantalla de inicio de sesión o mostrar mensaje de éxito
-      }
-    } catch (e) {
-      // Mostrar el error específico
-    }
+
+  if (registeredUser != null) {
+    // Mostrar Snackbar con mensaje de éxito
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('User created succesfully'),
+        duration: Duration(seconds: 4),
+      ),
+    );
+
+    // Esperar 4 segundos y luego navegar a la pantalla de inicio de sesión
+    Future.delayed(Duration(seconds: 4), () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
+    });
+  } else {
+    _showSnackBar("User cant be created", Icons.error, Colors.red);
+  }
+} catch (e) {
+  _showSnackBar("Error registering: $e", Icons.error, Colors.red);
+}
   }
 }
 
+void _showSnackBar(String message, IconData icon, Color color) {
+    final snackBar = SnackBar(
+      content: Row(
+        children: <Widget>[
+          Icon(icon, color: color),
+          const SizedBox(width: 20),
+          Expanded(child: Text(message)),
+        ],
+      ),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
 
 
   Widget _buildTextField({
