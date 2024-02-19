@@ -25,6 +25,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   String _selectedProfession = '';
   List<ProFamilyModel> _professionalFamilies = [];
+  ProFamilyModel? _registerWithProfession;
 
   @override
   void initState() {
@@ -169,11 +170,16 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Future<void> _validateFields() async {
     if (_nameController.text.isEmpty ||
+        _nameController.text.length > 30 ||
         _usernameController.text.isEmpty ||
+        _usernameController.text.length > 30 ||
         _selectedProfession.isEmpty ||
         _emailController.text.isEmpty ||
+        _emailController.text.length > 30 ||
         _passwordController.text.isEmpty ||
+        _passwordController.text.length > 30 ||
         _verifyPasswordController.text.isEmpty ||
+        _verifyPasswordController.text.length > 30 ||
         _passwordController.text != _verifyPasswordController.text) {
       _showSnackBar(
           "Invalid credentials or empty fields", Icons.error, Colors.red);
@@ -182,8 +188,10 @@ class _RegisterPageState extends State<RegisterPage> {
         final studentModel = StudentModel(
           name: _nameController.text,
           surname: _usernameController.text,
+          username: _usernameController.text,
           email: _emailController.text,
           password: _passwordController.text,
+          profesionalFamily: getSelectedProfFamily(),
         );
 
         final registeredUser = await _userService.register(studentModel);
@@ -209,6 +217,12 @@ class _RegisterPageState extends State<RegisterPage> {
         _showSnackBar("Error registering: $e", Icons.error, Colors.red);
       }
     }
+  }
+
+  ProFamilyModel? getSelectedProfFamily() {
+    return _professionalFamilies.firstWhere(
+      (proFamily) => proFamily.name == _selectedProfession,
+    );
   }
 
   void _showSnackBar(String message, IconData icon, Color color) {

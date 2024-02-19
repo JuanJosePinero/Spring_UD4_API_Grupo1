@@ -1,24 +1,25 @@
+import 'package:spring_ud4_grupo1_app/models/ProFamilyModel.dart';
 import 'package:spring_ud4_grupo1_app/models/UserModel.dart';
 
-class StudentModel extends UserModel{
+class StudentModel extends UserModel {
   int? id;
   String? name;
   String? surname;
+  String? username;
   String? email;
   String? password;
   int? enabled;
   int? deleted;
   String? role;
-  String? token; // Asumiendo que el token también se manejará aquí
-  // No hay campos directos para studentID o businessID ya que este es el modelo de estudiante.
-  // Asumiendo profesionalFamily y servicios como strings para simplificación
-  String? profesionalFamily;
+  String? token;
+  ProFamilyModel? profesionalFamily;
   List<String>? servicios;
 
   StudentModel({
     this.id,
     this.name,
     this.surname,
+    this.username,
     this.email,
     this.password,
     this.enabled,
@@ -34,13 +35,13 @@ class StudentModel extends UserModel{
       id: json['id'],
       name: json['name'],
       surname: json['surname'],
+      username: json['username'],
       email: json['email'],
       password: json['password'],
       enabled: json['enabled'],
       role: json['role'],
       token: json['token'],
       deleted: json['deleted'],
-      // Asumiendo conversiones simplificadas para profesionalFamily y servicios
       profesionalFamily: json['profesionalFamily'],
       servicios: List<String>.from(json['servicios'] ?? []),
     );
@@ -51,6 +52,7 @@ class StudentModel extends UserModel{
     data['id'] = id;
     data['name'] = name;
     data['surname'] = surname;
+    data['username'] = username;
     data['email'] = email;
     data['password'] = password;
     data['enabled'] = enabled;
@@ -63,7 +65,7 @@ class StudentModel extends UserModel{
   }
 }
 
-class StudentResponse extends  UserModel{
+class StudentResponse extends UserModel {
   bool? success;
   StudentModel? data;
   String? message;

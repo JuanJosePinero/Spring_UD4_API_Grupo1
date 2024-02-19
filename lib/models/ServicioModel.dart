@@ -36,12 +36,20 @@ class ServicioModel {
       id: json['id'],
       title: json['title'] ?? '',
       description: json['description'] ?? '',
-      registerDate: json['registerDate'] != null ? DateTime.fromMillisecondsSinceEpoch(json['registerDate']) : null,
-happeningDate: json['happeningDate'] != null ? DateTime.fromMillisecondsSinceEpoch(json['happeningDate']) : null,
+      registerDate: json['registerDate'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(json['registerDate'])
+          : null,
+      happeningDate: json['happeningDate'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(json['happeningDate'])
+          : null,
       studentId: json['studentId'],
       businessId: json['businessId'],
       profesionalFamilyId: json['profesionalFamilyId'],
-      valoration: json['valoration'] != null ? (json['valoration'] is int ? (json['valoration'] as int).toDouble() : json['valoration']) : null,
+      valoration: json['valoration'] != null
+          ? (json['valoration'] is int
+              ? (json['valoration'] as int).toDouble()
+              : json['valoration'])
+          : null,
       finished: json['finished'],
       comment: json['comment'] ?? '',
       deleted: json['deleted'],
