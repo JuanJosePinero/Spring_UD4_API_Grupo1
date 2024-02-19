@@ -19,8 +19,7 @@ class BusinessView extends StatefulWidget {
 
 class _BusinessViewState extends State<BusinessView> {
   late BusinessService _businessService;
-  late ProFamilyService
-      _proFamilyService; 
+  late ProFamilyService _proFamilyService;
   List<ServicioModel> _services = [];
   List<ProFamilyModel> _profesionalFamilies = [];
   ProFamilyModel? _selectedProfesionalFamily;
@@ -34,8 +33,8 @@ class _BusinessViewState extends State<BusinessView> {
   }
 
   Future<void> _loadProFamilies() async {
-    final families = await _proFamilyService.getProfesionalFamilies(
-        'Bearer${widget.token}'); 
+    final families =
+        await _proFamilyService.getProfesionalFamilies('Bearer${widget.token}');
     setState(() {
       _profesionalFamilies = families;
     });
@@ -107,9 +106,8 @@ class _BusinessViewState extends State<BusinessView> {
                         return ListTile(
                           title: Text(services[index].title ?? "No title"),
                           onTap: () {
-                            Navigator.of(context)
-                                .pop(); 
-                                _showSpecificServiceDetailsPanel(
+                            Navigator.of(context).pop();
+                            _showSpecificServiceDetailsPanel(
                                 services[index].id);
                           },
                         );
@@ -153,7 +151,9 @@ class _BusinessViewState extends State<BusinessView> {
                   Text("Título: ${serviceDetails.title}"),
                   const SizedBox(height: 10),
                   Text("Descripción: ${serviceDetails.description}"),
-                  const SizedBox(height: 10,),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   Text("Date: ${_formatDate(serviceDetails.registerDate)}")
                 ],
               ),
@@ -170,93 +170,102 @@ class _BusinessViewState extends State<BusinessView> {
   }
 
   void _showCreateServicePanel() {
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
+    final _titleController = TextEditingController();
+    final _descriptionController = TextEditingController();
 
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return FutureBuilder(
-        future: _loadProFamilies(),
-        builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else {
-            return AlertDialog(
-              title: const Text("Create New Service"),
-              content: SingleChildScrollView(
-                child: ListBody(
-                  children: <Widget>[
-                    TextField(
-                      controller: _titleController,
-                      decoration: const InputDecoration(labelText: 'Title'),
-                    ),
-                    TextField(
-                      controller: _descriptionController,
-                      decoration: const InputDecoration(labelText: 'Description'),
-                    ),
-                    DropdownButton<ProFamilyModel>(
-                      value: _selectedProfesionalFamily,
-                      hint: const Text("Select Professional Family"),
-                      onChanged: (newValue) {
-                        setState(() {
-                          _selectedProfesionalFamily = newValue!;
-                        });
-                      },
-                      items: _profesionalFamilies.map((ProFamilyModel family) {
-                        return DropdownMenuItem<ProFamilyModel>(
-                          value: family,
-                          child: Text(family.name ?? 'Nombre no disponible'),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-              ),
-              actions: <Widget>[
-                ElevatedButton(
-                  child: const Text('Accept'),
-                  onPressed: () async {
-                    try {
-                      final newService = ServicioModel(
-                        title: _titleController.text,
-                        description: _descriptionController.text,
-                        profesionalFamilyId: _selectedProfesionalFamily,
-                      );
-                      final createdService = await _businessService.createService(widget.token, newService);
-                      // Cerrar el diálogo antes de mostrar el SnackBar
-                      Navigator.pop(context); 
-                      // Mostrar el SnackBar
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Row(
-                            children: const [
-                              Icon(Icons.check_circle, color: Colors.green),
-                              SizedBox(width: 8),
-                              Text('Service created successfully'),
-                            ],
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // Mostrar un indicador de carga mientras se espera
+        return FutureBuilder(
+          future: Future.delayed(Duration(seconds: 2)), // Espera 2 segundos
+          builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            } else {
+              return AlertDialog(
+                title: const Text("Create New Service"),
+                content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                    return SingleChildScrollView(
+                      child: ListBody(
+                        children: <Widget>[
+                          TextField(
+                            controller: _titleController,
+                            decoration:
+                                const InputDecoration(labelText: 'Title'),
                           ),
-                        ),
-                      );
-                    } catch (e) {
-                      Navigator.pop(context); 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(e.toString())),
-                      );
-                    }
+                          TextField(
+                            controller: _descriptionController,
+                            decoration:
+                                const InputDecoration(labelText: 'Description'),
+                          ),
+                          DropdownButton<ProFamilyModel>(
+                            value: _selectedProfesionalFamily,
+                            hint: const Text("Select Professional Family"),
+                            onChanged: (newValue) {
+                              setState(() {
+                                _selectedProfesionalFamily = newValue;
+                              });
+                            },
+                            items: _profesionalFamilies
+                                .map((ProFamilyModel family) {
+                              return DropdownMenuItem<ProFamilyModel>(
+                                value: family,
+                                child:
+                                    Text(family.name ?? 'Nombre no disponible'),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+                    );
                   },
                 ),
-              ],
-            );
-          }
-        },
-      );
-    },
-  );
-}
-
+                actions: <Widget>[
+                  ElevatedButton(
+                    child: const Text('Accept'),
+                    onPressed: () async {
+                      try {
+                        final newService = ServicioModel(
+                          title: _titleController.text,
+                          description: _descriptionController.text,
+                          profesionalFamilyId: _selectedProfesionalFamily,
+                        );
+                        final createdService = await _businessService
+                            .createService(widget.token, newService);
+                        Navigator.pop(
+                            context); // Cierra el diálogo después de la operación exitosa
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Row(
+                              children: [
+                                Icon(Icons.check_circle, color: Colors.green),
+                                SizedBox(width: 8),
+                                Text('Service created successfully'),
+                              ],
+                            ),
+                          ),
+                        );
+                      } catch (e) {
+                        Navigator.pop(
+                            context); // También cierra el diálogo si hay un error
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(e.toString())),
+                        );
+                      }
+                    },
+                  ),
+                ],
+              );
+            }
+          },
+        );
+      },
+    );
+  }
 
   void showFloatingPanel(BuildContext context, bool isSuccess) {
     Future.delayed(Duration.zero, () {
@@ -377,12 +386,10 @@ class _BusinessViewState extends State<BusinessView> {
               onPressed: () async {
                 try {
                   await _businessService.deleteService(widget.token, serviceId);
-                  Navigator.of(localContext)
-                      .pop(); 
-                  showFloatingPanel(context, true); 
+                  Navigator.of(localContext).pop();
+                  showFloatingPanel(context, true);
                 } catch (e) {
-                  showFloatingPanel(
-                      context, false);
+                  showFloatingPanel(context, false);
                 }
               },
             ),
@@ -416,98 +423,107 @@ class _BusinessViewState extends State<BusinessView> {
           ),
         ),
         child: Center(
-  child: SingleChildScrollView(
-    child: Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.fitWidth,
-                  child: _buildButtonWithIconAndText(
-                    Icons.add,
-                    insertNewLinesEveryThreeWords('Create a new service'),
-                    () => _showCreateServicePanel(),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.fitWidth,
+                          child: _buildButtonWithIconAndText(
+                            Icons.add,
+                            insertNewLinesEveryThreeWords(
+                                'Create a new service'),
+                            () => _showCreateServicePanel(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 20,
+                      ),
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.fitWidth,
+                          child: _buildButtonWithIconAndText(
+                            Icons.edit,
+                            insertNewLinesEveryThreeWords('Update a service'),
+                            _showAllServicesForUpdate,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ),
-              const SizedBox(width: 20,),
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.fitWidth,
-                  child: _buildButtonWithIconAndText(
-                    Icons.edit,
-                    insertNewLinesEveryThreeWords('Update a service'),
-                    _showAllServicesForUpdate,
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.fitWidth,
+                          child: _buildButtonWithIconAndText(
+                            Icons.delete,
+                            insertNewLinesEveryThreeWords('Delete a service'),
+                            _deleteServicesPanel,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 20,
+                      ),
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.fitWidth,
+                          child: _buildButtonWithIconAndText(
+                            Icons.search,
+                            insertNewLinesEveryThreeWords(
+                                'Retrieve a specific service'),
+                            _showSpecificServicesPanel,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.fitWidth,
+                          child: _buildButtonWithIconAndText(
+                            Icons.list,
+                            insertNewLinesEveryThreeWords(
+                                'Retrieve all services'),
+                            _businessServices,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        width: 20,
+                      ),
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.fitWidth,
+                          child: _buildButtonWithIconAndText(
+                            Icons.filter_list,
+                            insertNewLinesEveryThreeWords(
+                                'Retrieve services filtering by professional family'),
+                            _showProFamiliesPanel,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.fitWidth,
-                  child: _buildButtonWithIconAndText(
-                    Icons.delete,
-                    insertNewLinesEveryThreeWords('Delete a service'),
-                    _deleteServicesPanel,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 20,),
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.fitWidth,
-                  child: _buildButtonWithIconAndText(
-                    Icons.search,
-                    insertNewLinesEveryThreeWords('Retrieve a specific service'),
-                    _showSpecificServicesPanel,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.fitWidth,
-                  child: _buildButtonWithIconAndText(
-                    Icons.list,
-                    insertNewLinesEveryThreeWords('Retrieve all services'),
-                    _businessServices,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 20,),
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.fitWidth,
-                  child: _buildButtonWithIconAndText(
-                    Icons.filter_list,
-                    insertNewLinesEveryThreeWords('Retrieve services filtering by professional family'),
-                    _showProFamiliesPanel,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    ),
-  ),
-),
-
+        ),
       ),
     );
   }
@@ -528,10 +544,8 @@ class _BusinessViewState extends State<BusinessView> {
                     return ListTile(
                       title: Text(service.title ?? 'No title'),
                       onTap: () {
-                        Navigator.pop(
-                            context);
-                        _editServiceDetails(
-                            service);
+                        Navigator.pop(context);
+                        _editServiceDetails(service);
                       },
                     );
                   }).toList(),
@@ -553,89 +567,98 @@ class _BusinessViewState extends State<BusinessView> {
   }
 
   void _editServiceDetails(ServicioModel service) {
-  final _titleController = TextEditingController(text: service.title);
-  final _descriptionController = TextEditingController(text: service.description);
-  ProFamilyModel? _selectedProfesionalFamily = service.profesionalFamilyId;
+    final _titleController = TextEditingController(text: service.title);
+    final _descriptionController =
+        TextEditingController(text: service.description);
+    ProFamilyModel? _selectedProfesionalFamily = service.profesionalFamilyId;
 
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text("Update Service"),
-        content: SingleChildScrollView(
-          child: ListBody(
-            children: <Widget>[
-              TextField(
-                controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Title'),
-              ),
-              TextField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Description'),
-              ),
-              DropdownButton<ProFamilyModel>(
-                value: _selectedProfesionalFamily,
-                hint: const Text("Select Professional Family"),
-                onChanged: (newValue) {
-                  setState(() {
-                    _selectedProfesionalFamily = newValue;
-                  });
-                },
-                items: _profesionalFamilies.map((ProFamilyModel family) {
-                  return DropdownMenuItem<ProFamilyModel>(
-                    value: family,
-                    child: Text(family.name ?? 'Name not available'),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-        ),
-        actions: <Widget>[
-          ElevatedButton(
-            child: const Text('Update'),
-            onPressed: () async {
-              try {
-                final updatedService = ServicioModel(
-                  id: service.id,
-                  title: _titleController.text,
-                  description: _descriptionController.text,
-                  profesionalFamilyId: _selectedProfesionalFamily,
-                );
-                await _businessService.updateService(widget.token, service.id!, updatedService);
-                Navigator.pop(context); // Cerrar el diálogo antes de mostrar el SnackBar
-                // Mostrar el SnackBar
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Row(
-                      children: const [
-                        Icon(Icons.check_circle, color: Colors.green),
-                        SizedBox(width: 8),
-                        Text('Service updated successfully'),
-                      ],
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Update Service"),
+              content: SingleChildScrollView(
+                child: ListBody(
+                  children: <Widget>[
+                    TextField(
+                      controller: _titleController,
+                      decoration: const InputDecoration(labelText: 'Title'),
                     ),
-                  ),
-                );
-              } catch (e) {
-                Navigator.pop(context); // Cerrar el diálogo en caso de error
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error updating service: $e')),
-                );
-              }
-            },
-          ),
-          TextButton(
-            child: const Text('Cancel'),
-            onPressed: () {
-              Navigator.pop(context); // Cerrar el diálogo si el usuario cancela
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-
+                    TextField(
+                      controller: _descriptionController,
+                      decoration:
+                          const InputDecoration(labelText: 'Description'),
+                    ),
+                    DropdownButton<ProFamilyModel>(
+                      value: _selectedProfesionalFamily,
+                      hint: const Text("Select Professional Family"),
+                      onChanged: (newValue) {
+                        setState(() {
+                          _selectedProfesionalFamily = newValue;
+                        });
+                      },
+                      items: _profesionalFamilies.map((ProFamilyModel family) {
+                        return DropdownMenuItem<ProFamilyModel>(
+                          value: family,
+                          child: Text(family.name ?? 'Nombre no disponible'),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+              ),
+              actions: <Widget>[
+                ElevatedButton(
+                  child: const Text('Update'),
+                  onPressed: () async {
+                    try {
+                      final updatedService = ServicioModel(
+                        id: service.id,
+                        title: _titleController.text,
+                        description: _descriptionController.text,
+                        profesionalFamilyId: _selectedProfesionalFamily,
+                        // Ajusta los campos según tu modelo de datos
+                      );
+                      await _businessService.updateService(
+                          widget.token, service.id!, updatedService);
+                      Navigator.pop(
+                          context); // Cierra el diálogo después de la operación exitosa
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.green),
+                              SizedBox(width: 8),
+                              Text('Service updated successfully'),
+                            ],
+                          ),
+                        ),
+                      );
+                    } catch (e) {
+                      Navigator.pop(
+                          context); // También cierra el diálogo si hay un error
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error updating service: $e')),
+                      );
+                    }
+                  },
+                ),
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () {
+                    Navigator.pop(
+                        context); // Cierra el diálogo sin realizar cambios
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 
   void _showProFamiliesPanel() async {
     final proFamilies =
@@ -658,8 +681,7 @@ class _BusinessViewState extends State<BusinessView> {
                         return ListTile(
                           title: Text(proFamily.name ?? "No name"),
                           onTap: () {
-                            Navigator.of(context)
-                                .pop();
+                            Navigator.of(context).pop();
                             _showServicesForProFamily(proFamily.id!);
                           },
                         );
@@ -715,18 +737,18 @@ class _BusinessViewState extends State<BusinessView> {
   }
 
   String insertNewLinesEveryThreeWords(String text) {
-  final words = text.split(' ');
-  var newText = '';
-  for (int i = 0; i < words.length; i++) {
-    newText += words[i];
-    if ((i + 1) % 3 == 0 && i != words.length - 1) {
-      newText += '\n';
-    } else if (i != words.length - 1) {
-      newText += ' ';
+    final words = text.split(' ');
+    var newText = '';
+    for (int i = 0; i < words.length; i++) {
+      newText += words[i];
+      if ((i + 1) % 3 == 0 && i != words.length - 1) {
+        newText += '\n';
+      } else if (i != words.length - 1) {
+        newText += ' ';
+      }
     }
+    return newText;
   }
-  return newText;
-}
 
   Widget _buildButtonWithIconAndText(
       IconData icon, String text, VoidCallback onPressed) {
