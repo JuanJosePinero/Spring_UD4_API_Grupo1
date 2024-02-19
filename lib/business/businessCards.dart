@@ -10,7 +10,7 @@ class BusinessCards extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Servicios de la Empresa'),
+        title: const Text('Services of your business'),
         backgroundColor: Colors.blue.shade300,
         elevation: 0,
       ),
@@ -48,6 +48,7 @@ class BusinessCards extends StatelessWidget {
   }
 
   String _formatDate(DateTime? date) {
+    print(date);
     if (date == null) return "No date";
     return "${date.day}-${date.month}-${date.year}";
   }

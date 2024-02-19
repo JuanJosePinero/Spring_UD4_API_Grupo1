@@ -105,15 +105,15 @@ void _showError() {
                 children: [
                   _buildButtonWithIconAndText(
                     Icons.group,
-                    'Alumnos: recuperan todos los servicios correspondientes a su familia profesional.',
+                    'Retrieve all services related to their professional family.',
                     () => _viewServices()),
                 _buildButtonWithIconAndText(
                     Icons.group_work,
-                    'Alumnos: recuperan todos los servicios correspondientes a su familia profesional, que tiene asignados.',
+                    'Retrieve all services related to their professional family, that are assigned to them.',
                     () => _viewAssignedServices()),
                 _buildButtonWithIconAndText(
                     Icons.group_add,
-                    'Alumnos: recuperan todos los servicios correspondientes a su familia profesional, que no tienen asignados ningún alumno.',
+                    'Retrieve all services related to their professional family, that are not assigned to any student.',
                     () => _viewUnassignedServices()),
               ],
               ),
@@ -130,14 +130,14 @@ void _showError() {
     child: Column(
       children: [
         IconButton(
-          icon: Icon(icon, size: 30, color: Colors.white),
+          icon: Icon(icon, size: 50, color: Colors.white),
           onPressed: onPressed,
         ),
         const SizedBox(height: 10),
         Text(
           text,
           textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white, fontSize: 15),
         ),
       ],
     ),
