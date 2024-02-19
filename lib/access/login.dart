@@ -24,62 +24,74 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _login() async {
-  _showLoadingDialog(); // Mostrar el diálogo de carga
+    _showLoadingDialog(); // Mostrar el diálogo de carga
 
-  final email = _emailController.text;
-  final password = _passwordController.text;
-  try {
-    final studentModel = await UserService().login(email, password);
+    final email = _emailController.text;
+    final password = _passwordController.text;
+    try {
+      final studentModel = await UserService().login(email, password);
 
-    if (studentModel != null) {
-      Navigator.pop(context); // Cierra el diálogo de carga antes de la navegación
-      switch (studentModel.role) {
-        case "ROLE_STUDENT":
-          Navigator.push(context, MaterialPageRoute(builder: (context) => StudentView(token: studentModel.token!)));
-          break;
-        case "ROLE_BUSINESS":
-          Navigator.push(context, MaterialPageRoute(builder: (context) => BusinessView(token: studentModel.token!)));
-          break;
-        case "ROLE_ADMIN":
-          Navigator.push(context, MaterialPageRoute(builder: (context) => AdminView()));
-          break;
-        default:
-          _showSnackBar("Rol not found", Icons.error, Colors.red);
-          break;
+      if (studentModel != null) {
+        Navigator.pop(
+            context); // Cierra el diálogo de carga antes de la navegación
+        switch (studentModel.role) {
+          case "ROLE_STUDENT":
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        StudentView(token: studentModel.token!)));
+            break;
+          case "ROLE_BUSINESS":
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        BusinessView(token: studentModel.token!)));
+            break;
+          case "ROLE_ADMIN":
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => AdminView()));
+            break;
+          default:
+            _showSnackBar("Rol not found", Icons.error, Colors.red);
+            break;
+        }
+      } else {
+        Navigator.pop(
+            context); // Asegúrate de cerrar el diálogo de carga si hay un error
+        _showSnackBar(
+            "User not enabled or is deleted", Icons.error, Colors.red);
       }
-    } else {
-      Navigator.pop(context); // Asegúrate de cerrar el diálogo de carga si hay un error
-      _showSnackBar("User not enabled or is deleted", Icons.error, Colors.red);
+    } catch (e) {
+      Navigator.pop(
+          context); // Asegúrate de cerrar el diálogo de carga si hay una excepción
+      _showSnackBar("Error validating credentials", Icons.error, Colors.red);
     }
-  } catch (e) {
-    Navigator.pop(context); // Asegúrate de cerrar el diálogo de carga si hay una excepción
-    _showSnackBar("Error validating credentials", Icons.error, Colors.red);
   }
-}
 
-void _showLoadingDialog() {
-  showDialog(
-    context: context,
-    barrierDismissible: false, // Impide que el diálogo se cierre al tocar fuera
-    builder: (context) {
-      return const Dialog(
-        child: Padding(
-          padding: EdgeInsets.all(20.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(width: 20),
-              Text("Checking credentials..."),
-            ],
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible:
+          false, // Impide que el diálogo se cierre al tocar fuera
+      builder: (context) {
+        return const Dialog(
+          child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 20),
+                Text("Checking credentials..."),
+              ],
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
-
-
+        );
+      },
+    );
+  }
 
   void _showSnackBar(String message, IconData icon, Color color) {
     final snackBar = SnackBar(
@@ -120,8 +132,16 @@ void _showLoadingDialog() {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  const FlutterLogo(size: 100),
-                  // Image.asset('assets/imgs/Logo1.jpeg', width: 100, height: 100),
+                  // const FlutterLogo(size: 100),
+                  Image.asset('assets/imgs/icon.png', width: 100, height: 100),
+                  const SizedBox(height: 15),
+                  const Text(
+                    "Salesianos School App",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 50),
                   TextFormField(
                     controller: _emailController,
@@ -164,7 +184,8 @@ void _showLoadingDialog() {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const RegisterPage()),
+                        MaterialPageRoute(
+                            builder: (context) => const RegisterPage()),
                       );
                     },
                     child: const Text('Register'),
@@ -177,5 +198,4 @@ void _showLoadingDialog() {
       ),
     );
   }
-  
 }
