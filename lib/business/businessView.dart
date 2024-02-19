@@ -183,7 +183,7 @@ class _BusinessViewState extends State<BusinessView> {
               _loadProFamilies(), // Llama a la función _loadProFamilies aquí
           builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
+              return const Center(
                 child: CircularProgressIndicator(),
               );
             } else {
@@ -497,43 +497,98 @@ class _BusinessViewState extends State<BusinessView> {
           ),
         ),
         child: Center(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildButtonWithIconAndText(
+  child: SingleChildScrollView(
+    child: Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: _buildButtonWithIconAndText(
                     Icons.add,
-                    'Crear nuevo servicio por parte de la empresa logueada',
+                    insertNewLinesEveryThreeWords('Create a new service'),
                     () => _showCreateServicePanel(),
                   ),
-                  _buildButtonWithIconAndText(
-                      Icons.search,
-                      'Recuperar un determinado servicio de la empresa logueada',
-                      _showSpecificServicesPanel),
-                  _buildButtonWithIconAndText(
+                ),
+              ),
+              const SizedBox(width: 20,),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: _buildButtonWithIconAndText(
+                    Icons.edit,
+                    insertNewLinesEveryThreeWords('Update a service'),
+                    _showAllServicesForUpdate,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20), // Espaciado entre filas
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: _buildButtonWithIconAndText(
+                    Icons.delete,
+                    insertNewLinesEveryThreeWords('Delete a service'),
+                    _deleteServicesPanel,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20,),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: _buildButtonWithIconAndText(
+                    Icons.search,
+                    insertNewLinesEveryThreeWords('Retrieve a specific service'),
+                    _showSpecificServicesPanel,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20), // Espaciado entre filas
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: _buildButtonWithIconAndText(
                     Icons.list,
-                    'Recuperar todos los servicios de la empresa logueada',
+                    insertNewLinesEveryThreeWords('Retrieve all services'),
                     _businessServices,
                   ),
-                  _buildButtonWithIconAndText(
-                      Icons.edit,
-                      'Actualizar un servicio de la empresa logueada',
-                      _showAllServicesForUpdate),
-                  _buildButtonWithIconAndText(
-                      Icons.delete,
-                      'Eliminar un servicio de la empresa logueada',
-                      _deleteServicesPanel),
-                  _buildButtonWithIconAndText(
-                      Icons.filter_list,
-                      'Recuperar los servicios de una empresa filtrando por familia profesional',
-                      _showProFamiliesPanel),
-                ],
+                ),
               ),
-            ),
+              const SizedBox(width: 20,),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.fitWidth,
+                  child: _buildButtonWithIconAndText(
+                    Icons.filter_list,
+                    insertNewLinesEveryThreeWords('Retrieve services filtering by professional family'),
+                    _showProFamiliesPanel,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
+        ],
+      ),
+    ),
+  ),
+),
+
       ),
     );
   }
@@ -720,7 +775,7 @@ class _BusinessViewState extends State<BusinessView> {
       } else {
         // Mostrar mensaje de error si no hay servicios
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text(
                 "No se encontraron servicios para esta familia profesional"),
           ),
@@ -736,6 +791,20 @@ class _BusinessViewState extends State<BusinessView> {
     }
   }
 
+  String insertNewLinesEveryThreeWords(String text) {
+  final words = text.split(' ');
+  var newText = '';
+  for (int i = 0; i < words.length; i++) {
+    newText += words[i];
+    if ((i + 1) % 3 == 0 && i != words.length - 1) {
+      newText += '\n';
+    } else if (i != words.length - 1) {
+      newText += ' ';
+    }
+  }
+  return newText;
+}
+
   Widget _buildButtonWithIconAndText(
       IconData icon, String text, VoidCallback onPressed) {
     return Padding(
@@ -743,14 +812,14 @@ class _BusinessViewState extends State<BusinessView> {
       child: Column(
         children: [
           IconButton(
-            icon: Icon(icon, size: 30, color: Colors.white),
+            icon: Icon(icon, size: 40, color: Colors.white),
             onPressed: onPressed,
           ),
           const SizedBox(height: 10),
           Text(
             text,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white, fontSize: 16),
           ),
         ],
       ),
