@@ -24,22 +24,21 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _login() async {
+  _showLoadingDialog(); // Mostrar el diálogo de carga
+
   final email = _emailController.text;
   final password = _passwordController.text;
-  final studentModel = await UserService().login(email, password);
+  try {
+    final studentModel = await UserService().login(email, password);
 
-  if (studentModel != null) {
-    // if (studentModel.enabled == 1 || studentModel.deleted == 0) {
+    if (studentModel != null) {
+      Navigator.pop(context); // Cierra el diálogo de carga antes de la navegación
       switch (studentModel.role) {
         case "ROLE_STUDENT":
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => StudentView(token: studentModel.token!)),
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (context) => StudentView(token: studentModel.token!)));
           break;
         case "ROLE_BUSINESS":
-          Navigator.push(
-            context, MaterialPageRoute(builder: (context) => BusinessView(token: studentModel.token!)));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => BusinessView(token: studentModel.token!)));
           break;
         case "ROLE_ADMIN":
           Navigator.push(context, MaterialPageRoute(builder: (context) => AdminView()));
@@ -49,12 +48,37 @@ class _LoginPageState extends State<LoginPage> {
           break;
       }
     } else {
+      Navigator.pop(context); // Asegúrate de cerrar el diálogo de carga si hay un error
       _showSnackBar("User not enabled or is deleted", Icons.error, Colors.red);
     }
-  // } else {
-  //   _showSnackBar("Error validating credentials", Icons.error, Colors.red);
-  // }
+  } catch (e) {
+    Navigator.pop(context); // Asegúrate de cerrar el diálogo de carga si hay una excepción
+    _showSnackBar("Error validating credentials", Icons.error, Colors.red);
+  }
 }
+
+void _showLoadingDialog() {
+  showDialog(
+    context: context,
+    barrierDismissible: false, // Impide que el diálogo se cierre al tocar fuera
+    builder: (context) {
+      return const Dialog(
+        child: Padding(
+          padding: EdgeInsets.all(20.0),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Text("Checking credentials..."),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
 
 
   void _showSnackBar(String message, IconData icon, Color color) {
@@ -140,7 +164,7 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => RegisterPage()),
+                        MaterialPageRoute(builder: (context) => const RegisterPage()),
                       );
                     },
                     child: const Text('Register'),

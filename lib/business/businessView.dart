@@ -41,8 +41,10 @@ class _BusinessViewState extends State<BusinessView> {
   }
 
   void _businessServices() async {
+    _showLoadingDialog();
     try {
       final services = await _businessService.getBusinessServices(widget.token);
+      Navigator.pop(context);
       if (services != null) {
         Navigator.push(
           context,
@@ -88,83 +90,105 @@ class _BusinessViewState extends State<BusinessView> {
   }
 
   void _showSpecificServicesPanel() async {
-    final services = await _businessService.getBusinessServices(widget.token);
-    if (services != null) {
-      showDialog(
-        context: context,
-        builder: (BuildContext localContext) {
-          return Dialog(
-            child: Container(
-              padding: const EdgeInsets.all(20.0),
-              height: MediaQuery.of(localContext).size.height * 0.5,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: services.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return ListTile(
-                          title: Text(services[index].title ?? "No title"),
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            _showSpecificServiceDetailsPanel(
-                                services[index].id);
-                          },
-                        );
-                      },
+    _showLoadingDialog();
+    try {
+      final services = await _businessService.getBusinessServices(widget.token);
+      Navigator.pop(context);
+      if (services != null) {
+        showDialog(
+          context: context,
+          builder: (BuildContext localContext) {
+            return Dialog(
+              child: Container(
+                padding: const EdgeInsets.all(20.0),
+                height: MediaQuery.of(localContext).size.height * 0.5,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: services.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return ListTile(
+                            title: Text(services[index].title ?? "No title"),
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              _showSpecificServiceDetailsPanel(
+                                  services[index].id);
+                            },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-      );
-    } else {
+            );
+          },
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("No se pudieron cargar los servicios")),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(
+          context); // Asegurarse de cerrar el diálogo de carga en caso de un error
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("No se pudieron cargar los servicios")),
+        SnackBar(content: Text("Error retrieving services: $e")),
       );
     }
   }
 
   void _showSpecificServiceDetailsPanel(int? serviceId) async {
-    if (serviceId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("ID de servicio no válido")),
-      );
-      return;
-    }
+    _showLoadingDialog(); // Muestra el diálogo de carga al inicio
+    try {
+      if (serviceId == null) {
+        Navigator.pop(
+            context); // Cierra el diálogo de carga antes de mostrar el SnackBar
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("ID de servicio no válido")),
+        );
+        return;
+      }
 
-    final serviceDetails = await _businessService.getBusinessSpecificService(
-        widget.token, serviceId);
+      final serviceDetails = await _businessService.getBusinessSpecificService(
+          widget.token, serviceId);
 
-    if (serviceDetails != null) {
-      showDialog(
-        context: context,
-        builder: (BuildContext localContext) {
-          return Dialog(
-            child: Container(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text("Título: ${serviceDetails.title}"),
-                  const SizedBox(height: 10),
-                  Text("Descripción: ${serviceDetails.description}"),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text("Date: ${_formatDate(serviceDetails.registerDate)}")
-                ],
+      Navigator.pop(
+          context); // Cierra el diálogo de carga justo antes de mostrar los detalles o el mensaje de error
+
+      if (serviceDetails != null) {
+        showDialog(
+          context: context,
+          builder: (BuildContext localContext) {
+            return Dialog(
+              child: Container(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("Título: ${serviceDetails.title}"),
+                    const SizedBox(height: 10),
+                    Text("Descripción: ${serviceDetails.description}"),
+                    const SizedBox(height: 10),
+                    Text("Date: ${_formatDate(serviceDetails.registerDate)}")
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-      );
-    } else {
+            );
+          },
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("No se pudo cargar el detalle del servicio")),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(
+          context); // Asegúrate de cerrar el diálogo de carga en caso de un error
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("No se pudo cargar el detalle del servicio")),
+        SnackBar(content: Text("Error retrieving services: $e")),
       );
     }
   }
@@ -178,7 +202,8 @@ class _BusinessViewState extends State<BusinessView> {
       builder: (BuildContext context) {
         // Mostrar un indicador de carga mientras se espera
         return FutureBuilder(
-          future: Future.delayed(Duration(seconds: 2)), // Espera 2 segundos
+          future:
+              Future.delayed(const Duration(seconds: 2)), // Espera 2 segundos
           builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(
@@ -324,46 +349,56 @@ class _BusinessViewState extends State<BusinessView> {
   }
 
   void _deleteServicesPanel() async {
-    final services = await _businessService.getBusinessServices(widget.token);
-    if (services != null) {
-      showDialog(
-        context: context,
-        builder: (BuildContext localContext) {
-          return Dialog(
-            child: Container(
-              padding: const EdgeInsets.all(20.0),
-              height: MediaQuery.of(localContext).size.height * 0.5,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: services.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        if (services[index].id != null) {
-                          return ListTile(
-                            title: Text(services[index].title ?? "No title"),
-                            onTap: () {
-                              Navigator.of(localContext).pop();
-                              _confirmDeleteService(services[index].id!,
-                                  services[index].title, context);
-                            },
-                          );
-                        } else {
-                          return ListTile(
-                            title: Text(services[index].title ?? "No title"),
-                          );
-                        }
-                      },
+    _showLoadingDialog();
+    try {
+      final services = await _businessService.getBusinessServices(widget.token);
+      Navigator.pop(context);
+      if (services != null) {
+        showDialog(
+          context: context,
+          builder: (BuildContext localContext) {
+            return Dialog(
+              child: Container(
+                padding: const EdgeInsets.all(20.0),
+                height: MediaQuery.of(localContext).size.height * 0.5,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: services.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          if (services[index].id != null) {
+                            return ListTile(
+                              title: Text(services[index].title ?? "No title"),
+                              onTap: () {
+                                Navigator.of(localContext).pop();
+                                _confirmDeleteService(services[index].id!,
+                                    services[index].title, context);
+                              },
+                            );
+                          } else {
+                            return ListTile(
+                              title: Text(services[index].title ?? "No title"),
+                            );
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        );
+      } else {
+        showFloatingPanel(context, false);
+      }
+    } catch (e) {
+      Navigator.pop(
+          context); // Asegurarse de cerrar el diálogo de carga en caso de un error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error al cargar familias profesionales: $e")),
       );
-    } else {
-      showFloatingPanel(context, false);
     }
   }
 
@@ -529,8 +564,10 @@ class _BusinessViewState extends State<BusinessView> {
   }
 
   void _showAllServicesForUpdate() async {
+    _showLoadingDialog();
     try {
       final services = await _businessService.getBusinessServices(widget.token);
+      Navigator.pop(context);
 
       if (services != null && services.isNotEmpty) {
         showDialog(
@@ -661,77 +698,87 @@ class _BusinessViewState extends State<BusinessView> {
   }
 
   void _showProFamiliesPanel() async {
-    final proFamilies =
-        await _proFamilyService.getProfesionalFamilies(widget.token);
-    if (proFamilies != null) {
-      showDialog(
-        context: context,
-        builder: (BuildContext localContext) {
-          return Dialog(
-            child: Container(
-              padding: const EdgeInsets.all(20.0),
-              height: MediaQuery.of(localContext).size.height * 0.5,
-              child: Column(
-                children: [
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: proFamilies.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final proFamily = proFamilies[index];
-                        return ListTile(
-                          title: Text(proFamily.name ?? "No name"),
-                          onTap: () {
-                            Navigator.of(context).pop();
-                            _showServicesForProFamily(proFamily.id!);
-                          },
-                        );
-                      },
+    _showLoadingDialog(); // Mostrar el diálogo de carga
+    try {
+      final proFamilies =
+          await _proFamilyService.getProfesionalFamilies(widget.token);
+      Navigator.pop(
+          context); // Cierra el diálogo de carga aquí, antes de mostrar las familias profesionales
+
+      if (proFamilies != null) {
+        showDialog(
+          context: context,
+          builder: (BuildContext localContext) {
+            return Dialog(
+              child: Container(
+                padding: const EdgeInsets.all(20.0),
+                height: MediaQuery.of(localContext).size.height * 0.5,
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: proFamilies.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final proFamily = proFamilies[index];
+                          return ListTile(
+                            title: Text(proFamily.name ?? "No name"),
+                            onTap: () {
+                              Navigator.of(context)
+                                  .pop(); // Cerrar el diálogo actual
+                              _showServicesForProFamily(proFamily
+                                  .id!); // Muestra servicios para la familia profesional
+                            },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-      );
-    } else {
+            );
+          },
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content:
+                  Text("No se pudieron cargar las familias profesionales")),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(
+          context); // Asegurarse de cerrar el diálogo de carga en caso de un error
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text("No se pudieron cargar las familias profesionales")),
+        SnackBar(content: Text("Error al cargar familias profesionales: $e")),
       );
     }
   }
 
   void _showServicesForProFamily(int proFamilyId) async {
+    _showLoadingDialog(); // Mostrar el diálogo de carga antes de cargar los servicios
+
     try {
-      // Obtener los servicios para la familia profesional seleccionada
       final services = await _businessService.getBusinessProFamServices(
-        widget.token,
-        proFamilyId,
-      );
+          widget.token, proFamilyId);
+      Navigator.pop(
+          context); // Cierra el diálogo de carga antes de la navegación
 
       if (services != null && services.isNotEmpty) {
-        // Mostrar los servicios en una nueva página
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => BusinessCards(servicios: services),
-          ),
+              builder: (context) => BusinessCards(servicios: services)),
         );
       } else {
-        // Mostrar mensaje de error si no hay servicios
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-                "No se encontraron servicios para esta familia profesional"),
-          ),
+              content: Text("This profesional family has no services")),
         );
       }
     } catch (e) {
-      // Manejar cualquier error
+      Navigator.pop(
+          context); // Asegúrate de cerrar el diálogo de carga en caso de error
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error al recuperar servicios: $e"),
-        ),
+        SnackBar(content: Text("Error retrieving services: $e")),
       );
     }
   }
@@ -775,5 +822,27 @@ class _BusinessViewState extends State<BusinessView> {
     print(date);
     if (date == null) return "No date";
     return "${date.day}-${date.month}-${date.year}";
+  }
+
+  void _showLoadingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return const Dialog(
+          child: Padding(
+            padding: EdgeInsets.all(20.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(width: 20),
+                Text("Loading..."),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }
