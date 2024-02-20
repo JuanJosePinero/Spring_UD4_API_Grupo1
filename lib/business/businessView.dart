@@ -252,33 +252,52 @@ class _BusinessViewState extends State<BusinessView> {
                   ElevatedButton(
                     child: const Text('Accept'),
                     onPressed: () async {
-                      try {
-                        final newService = ServicioModel(
-                          title: _titleController.text,
-                          description: _descriptionController.text,
-                          profesionalFamilyId: _selectedProfesionalFamily,
-                        );
-                        final createdService = await _businessService
-                            .createService(widget.token, newService);
-                        Navigator.pop(
-                            context); // Cierra el diálogo después de la operación exitosa
+                      if (_selectedProfesionalFamily == null ||
+                          _titleController.text.isEmpty ||
+                          _titleController.text.length > 30 ||
+                          _descriptionController.text.isEmpty ||
+                          _descriptionController.text.length > 60) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Row(
                               children: [
-                                Icon(Icons.check_circle, color: Colors.green),
+                                Icon(Icons.one_x_mobiledata_outlined,
+                                    color: Colors.red),
                                 SizedBox(width: 8),
-                                Text('Service created successfully'),
+                                Text('Please fill all the fields '),
                               ],
                             ),
                           ),
                         );
-                      } catch (e) {
-                        Navigator.pop(
-                            context); // También cierra el diálogo si hay un error
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(e.toString())),
-                        );
+                      } else {
+                        try {
+                          final newService = ServicioModel(
+                            title: _titleController.text,
+                            description: _descriptionController.text,
+                            profesionalFamilyId: _selectedProfesionalFamily,
+                          );
+                          final createdService = await _businessService
+                              .createService(widget.token, newService);
+                          Navigator.pop(
+                              context); // Cierra el diálogo después de la operación exitosa
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Row(
+                                children: [
+                                  Icon(Icons.check_circle, color: Colors.green),
+                                  SizedBox(width: 8),
+                                  Text('Service created successfully'),
+                                ],
+                              ),
+                            ),
+                          );
+                        } catch (e) {
+                          Navigator.pop(
+                              context); // También cierra el diálogo si hay un error
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(e.toString())),
+                          );
+                        }
                       }
                     },
                   ),
