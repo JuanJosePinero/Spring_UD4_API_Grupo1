@@ -764,7 +764,7 @@ class _BusinessViewState extends State<BusinessView> {
       Navigator.pop(
           context); // Asegurarse de cerrar el diálogo de carga en caso de un error
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error al cargar familias profesionales: $e")),
+        SnackBar(content: Text("Error: $e")),
       );
     }
   }
