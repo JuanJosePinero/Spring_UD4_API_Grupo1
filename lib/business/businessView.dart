@@ -657,7 +657,8 @@ class _BusinessViewState extends State<BusinessView> {
                         const SnackBar(
                           content: Row(
                             children: [
-                              Icon(Icons.check_circle, color: Colors.green),
+                              Icon(Icons.one_x_mobiledata_outlined,
+                                  color: Colors.red),
                               SizedBox(width: 8),
                               Text('Please fill all the fields '),
                             ],
